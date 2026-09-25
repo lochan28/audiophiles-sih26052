@@ -26,7 +26,7 @@ h1,h2,h3{font-family:var(--display);color:var(--ink);margin:0;text-wrap:balance}
 h2{font-size:1.05rem;font-weight:700;font-stretch:85%;letter-spacing:.08em;text-transform:uppercase;color:var(--navy)}
 p{margin:0}
 a{color:inherit}
-a:focus-visible,.video:focus-visible{outline:3px solid var(--teal);outline-offset:3px;border-radius:10px}
+a:focus-visible{outline:3px solid var(--teal);outline-offset:3px;border-radius:10px}
 .mono{font-family:var(--mono)}
 .label{font:500 .72rem/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 
@@ -48,14 +48,6 @@ h1{font-size:clamp(2.4rem,7vw,4rem);font-weight:700;font-stretch:85%;line-height
 section{display:flex;flex-direction:column;gap:16px}
 .sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding-bottom:10px}
 
-/* videos */
-.videos{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-.video{display:flex;gap:16px;align-items:center;text-decoration:none;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:18px;transition:border-color .15s,transform .15s}
-.video:hover{border-color:var(--teal);transform:translateY(-1px)}
-.play{flex:none;width:52px;height:52px;border-radius:50%;background:var(--navy);display:grid;place-items:center}
-.play svg{width:18px;height:18px;margin-left:3px;fill:var(--surface)}
-.video h3{font-size:1.15rem;font-weight:600;font-stretch:85%}
-.video p{font-size:.88rem;color:var(--muted)}
 
 /* numbers */
 .figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
@@ -74,7 +66,6 @@ section{display:flex;flex-direction:column;gap:16px}
 /* gallery */
 .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 figure{margin:0;display:flex;flex-direction:column;gap:8px}
-figure.wide{grid-column:1/-1}
 .shot{background:var(--mat);border:1px solid var(--rule);border-radius:12px;padding:12px;overflow:hidden}
 .shot img{display:block;width:100%;height:auto;border-radius:4px}
 figcaption{font-size:.88rem;color:var(--muted)}
@@ -142,13 +133,141 @@ figcaption b{color:var(--ink);font-weight:600}
 .segs span:nth-child(2){text-align:center}.segs span:nth-child(3){text-align:right}
 .time{flex:none;font:500 .8rem/1 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
 
+/* ===== how it works: two swipeable walkthroughs ===== */
+/* tabs choosing which flow */
+.hw-tabs{display:flex;gap:8px;margin:0;border-bottom:1px solid var(--rule)}
+.hw-tab{flex:1;text-align:center;background:none;border:0;border-bottom:3px solid transparent;padding:11px 6px 12px;cursor:pointer;
+  font:600 .92rem/1.15 var(--display);font-stretch:85%;color:var(--muted)}
+.hw-tab[aria-selected="true"]{color:var(--ink);border-color:var(--teal)}
+.hw-tab small{display:block;font:400 .72rem/1.2 var(--sans);color:var(--muted);margin-top:2px}
+
+/* the slide deck */
+.hw-deck{position:relative}
+.hw-progress{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.hw-count{font:500 .78rem/1 var(--mono);color:var(--muted)}
+/* flow rail: start marker, every step by name, end marker. The whole flow
+   always fits: one row of names on wide screens; on phones the names alternate
+   above and below the line so each gets twice the room. */
+.hw-rail{position:relative;display:flex;margin:6px 0 12px;padding:0 4px;height:52px}
+.hw-node{flex:1 1 0;min-width:0;position:relative;height:100%;background:none;border:0;padding:0;margin:0;cursor:pointer;
+  font:500 .7rem/1.15 var(--sans);color:var(--muted)}
+.hw-node::before{content:"";position:absolute;top:7px;left:-50%;right:50%;height:2px;background:var(--rule)}
+.hw-node:first-child::before{display:none}
+.hw-node i{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:1;width:16px;height:16px;border-radius:50%;
+  background:var(--ground);border:2px solid var(--rule);box-sizing:border-box}
+.hw-node .hw-t{position:absolute;top:24px;left:50%;transform:translateX(-50%);white-space:nowrap;text-align:center}
+.hw-node:first-child .hw-t{left:0;transform:none;text-align:left}
+.hw-node:last-child .hw-t{left:auto;right:0;transform:none;text-align:right}
+.hw-node:first-child i{left:8px}
+.hw-node:last-child i{left:auto;right:-8px;transform:none}
+.hw-node:nth-child(2)::before{left:calc(-50% - 8px)}
+.hw-node:last-child::before{right:0}
+.hw-node.hw-done{color:var(--body)}
+.hw-node.hw-done i{background:var(--teal);border-color:var(--teal)}
+/* the connecting line fills with teal from left to right as you advance, and
+   drains back when you go back */
+.hw-node::before{background:linear-gradient(var(--teal),var(--teal)) left center/0% 100% no-repeat,var(--rule);transition:background-size .4s ease}
+.hw-node.hw-done::before,.hw-node.hw-here::before,.hw-node.hw-end.hw-reached::before{background:linear-gradient(var(--teal),var(--teal)) left center/100% 100% no-repeat,var(--rule)}
+.hw-node{transition:color .3s ease}
+.hw-node i{transition:background-color .3s ease,border-color .3s ease,transform .3s ease,box-shadow .3s ease}
+.hw-node.hw-here{color:var(--ink);font-weight:600}
+.hw-node.hw-here i{transform:translateX(-50%) scale(1.3);background:var(--navy);border-color:var(--navy);box-shadow:0 0 0 4px rgba(42,143,166,.22)}
+.hw-node:focus-visible{outline:none}
+.hw-node:focus-visible .hw-t{outline:2px solid var(--teal);outline-offset:2px;border-radius:4px}
+.hw-node.hw-end{cursor:default;color:var(--ink)}
+.hw-node.hw-end .hw-t{font:600 .7rem/1.2 var(--sans)}
+.hw-node.hw-end small{display:block;font:500 .6rem/1.2 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.hw-node.hw-end i{border-radius:4px}
+.hw-node.hw-end.hw-reached i{border-color:var(--teal);background:var(--good-bg)}
+.hw-node.hw-end.hw-go{cursor:pointer}
+.hw-node.hw-end.hw-go:hover .hw-t{color:var(--teal)}
+@media (max-width:600px){
+  /* names alternate above and below the line; the dot row sits 34px down so
+     two-line labels (Start/End) fit above it inside the rail */
+  .hw-rail{height:96px}
+  .hw-node i{top:34px}
+  .hw-node::before{top:41px}
+  .hw-node .hw-t{top:58px}
+  .hw-node:nth-child(even) .hw-t{top:auto;bottom:calc(100% - 26px)}
+  .hw-node.hw-end .hw-t{white-space:normal;max-width:58px;width:max-content}
+  .hw-node .hw-arr{display:none}
+}
+
+/* the cards sit side by side on a strip that slides; it is as tall as the
+   tallest card, so the Back/Next buttons never jump between steps */
+.hw-stage{overflow:hidden;touch-action:pan-y;cursor:grab;border-radius:14px}
+.hw-stage.hw-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
+.hw-track{display:flex;gap:16px;align-items:stretch;transition:transform .42s cubic-bezier(.22,.61,.36,1);will-change:transform}
+.hw-stage.hw-dragging .hw-track{transition:none}
+.hw-slide{flex:0 0 100%;min-width:0;display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:20px}
+.hw-slide img{-webkit-user-drag:none}
+@media (prefers-reduced-motion:reduce){
+  .hw-track,.hw-node,.hw-node i,.hw-node::before{transition:none !important}
+}
+.hw-visual{display:flex;flex-direction:column;gap:12px}
+.hw-visual:empty{display:none}
+.hw-visual figure{margin:0}
+.hw-slide h3{font-size:1.3rem;font-weight:700;font-stretch:85%;letter-spacing:0;text-transform:none}
+.hw-slide .hw-body{font-size:.94rem;color:var(--body)}
+.hw-slide .hw-body b{color:var(--ink)}
+
+.hw-visual img{display:block;width:100%;height:clamp(130px,20vw,190px);object-fit:fill;border-radius:8px;background:#000}
+.hw-visual figcaption{margin-top:6px;font-size:.78rem;color:var(--muted);line-height:1.35}
+.hw-pair{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start}
+.hw-pair .hw-plus{align-self:center;font:600 1.2rem/1 var(--mono);color:var(--muted);margin-top:40px}
+.hw-pair figure{margin:0}
+.hw-pair img{height:clamp(90px,14vw,140px)}
+.hw-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.hw-chips span{font:500 .66rem/1 var(--mono);background:var(--mat);border:1px solid var(--rule);border-radius:999px;padding:4px 7px;color:var(--body)}
+
+.hw-snr{display:flex;flex-direction:column;gap:5px}
+.hw-snr-bar{position:relative;height:12px;border-radius:6px;overflow:hidden;display:flex}
+.hw-snr-bar i{display:block;height:100%}
+.hw-snr-bar .hw-lo{width:25%;background:#E9B08F}
+.hw-snr-bar .hw-hi{width:75%;background:#9FD0DB}
+.hw-snr-bar .hw-mark{position:absolute;top:-2px;bottom:-2px;left:50%;width:3px;background:var(--ink)}
+.hw-snr-scale{display:flex;justify-content:space-between;font:500 .64rem/1 var(--mono);color:var(--muted)}
+
+.hw-crn{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:5px;align-items:stretch}
+.hw-blk{background:var(--navy);color:#fff;border-radius:8px;padding:8px 5px;text-align:center;display:flex;flex-direction:column;gap:3px;justify-content:center}
+.hw-blk b{font:600 .78rem/1.1 var(--display);font-stretch:85%}
+.hw-blk small{font:400 .62rem/1.2 var(--mono);opacity:.85}
+.hw-crn .hw-to{align-self:center;color:var(--navy);font-weight:700;font-size:.9rem}
+.hw-badge{align-self:flex-start;font:500 .66rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:6px;background:var(--good-bg);color:var(--good)}
+
+.hw-eq{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:6px;align-items:stretch}
+.hw-eq .hw-op{align-self:center;font:600 1.1rem/1 var(--mono);color:var(--navy)}
+.hw-blk.hw-teal{background:var(--teal)}
+
+.hw-chunks{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
+.hw-chunks i{height:20px;border-radius:3px;background:var(--rule)}
+.hw-chunks i.hw-now{background:var(--teal)}
+
+.hw-loopcard{display:flex;gap:10px;align-items:flex-start;padding:4px 2px}
+.hw-loopcard svg{flex:none;width:26px;height:26px;fill:none;stroke:var(--teal);stroke-width:2.2;margin-top:2px}
+
+.hw-stat{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:12px 14px;border-radius:10px;background:var(--mat);border:1px solid var(--rule)}
+.hw-stat b{font:500 1.5rem/1 var(--mono);color:var(--ink)}
+.hw-stat span{font-size:.85rem}
+.hw-leftbehind{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.82rem;color:var(--muted)}
+.hw-leftbehind s{font:500 .68rem/1 var(--mono);border:1px dashed var(--rule);border-radius:999px;padding:5px 8px;color:var(--muted)}
+
+.hw-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:16px}
+.hw-navbtn{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;border:0;border-radius:999px;padding:10px 16px;
+  font:500 .82rem/1 var(--mono);letter-spacing:.03em;cursor:pointer}
+.hw-navbtn:hover{background:var(--teal)}
+.hw-navbtn:disabled{opacity:.35;cursor:default;background:var(--navy)}
+.hw-navbtn svg{width:13px;height:13px;fill:#fff}
+
+.hw-hint{text-align:center;font-size:.76rem;color:var(--muted);margin-top:10px}
+@media (min-width:640px){ .hw-hint{display:none} }
+
 footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 
 @media (max-width:560px){
   .gallery{grid-template-columns:1fr}
   .log li{grid-template-columns:1fr;gap:4px}
 }
-@media (prefers-reduced-motion:reduce){ .video{transition:none} .video:hover{transform:none} }
 </style>
 
 </head>
@@ -156,7 +275,7 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
 <div class="wrap">
 
   <div class="banner" role="note">
-    <b>Prototype in progress.</b> The numbers and images below are from our own bench runs and change as the system improves. Last updated 24 Sep 2026.
+    <b>Prototype in progress.</b> The numbers and images below are from our own bench runs and change as the system improves.
   </div>
 
   <header>
@@ -168,7 +287,7 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
     <p class="lede">Real-time AI noise cancellation for defence radio. Gunfire, engines and rotor wash are stripped from the channel on a Raspberry Pi 5, so an order is heard the first time.</p>
     <div class="status">
       <span class="chip live">Prototype running</span>
-      <span>Last updated 24 Sep 2026</span>
+      <span>Last updated 25 Sep 2026</span>
     </div>
     <canvas class="wave" id="wave" aria-hidden="true"></canvas>
     <div class="wave-key"><span class="label">Noisy channel in</span><span class="label">Clean speech out</span></div>
@@ -261,6 +380,27 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
     <p class="note">Three held-out test recordings joined end to end, so the noise switches from a helicopter louder than the speech itself, to an engine, to rifle fire. None of it was used in training. On this clip PESQ rises from 1.19 to 2.06, one of the best of our eight demo clips; across all eight the gain runs from +0.39 to +0.87.</p>
   </section>
 
+  <section aria-labelledby="h-how" id="how-it-works">
+    <div class="sec-head"><h2 id="h-how">How it works</h2><span class="label">Swipe through each flow</span></div>
+    <p>How the model is trained, and how that same trained model runs live on a Raspberry Pi. Every picture is a real spectrogram from this project: time runs left to right, pitch bottom to top, brighter is louder.</p>
+    <div class="hw-tabs" role="tablist">
+      <button class="hw-tab" role="tab" id="hw-tab-train" aria-selected="true" data-track="train">Training<small>7 steps</small></button>
+      <button class="hw-tab" role="tab" id="hw-tab-run" aria-selected="false" data-track="run">On the Pi<small>6 steps</small></button>
+    </div>
+
+    <div class="hw-deck">
+      <nav class="hw-rail" id="hw-rail" aria-label="Steps in this walkthrough"></nav>
+      <div class="hw-progress"><span class="hw-count" id="hw-count">1 / 7</span></div>
+      <div class="hw-stage" id="hw-stage"></div>
+      <div class="hw-nav">
+        <button class="hw-navbtn hw-prev" id="hw-prev" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 2 4 8l6 6 1.4-1.4L6.8 8l4.6-4.6z"/></svg>Back</button>
+        <button class="hw-navbtn hw-next" id="hw-next" type="button">Next<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 2l6 6-6 6-1.4-1.4L9.2 8 4.6 3.4z"/></svg></button>
+      </div>
+      <p class="hw-hint">Swipe, or use the arrow keys</p>
+    </div>
+    <p class="note">Training example: an English training clip with an assault-rifle clip mixed in at 5 dB, run through the shipped model (run 0036). On the Pi: the recording from the demo video.</p>
+  </section>
+
   <section aria-labelledby="h-num">
     <div class="sec-head"><h2 id="h-num">Where the numbers stand</h2><span class="label">125 held-out mixtures</span></div>
     <div class="figs">
@@ -293,12 +433,8 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
   </section>
 
   <section aria-labelledby="h-gal">
-    <div class="sec-head"><h2 id="h-gal">From the bench</h2><span class="label">3 items</span></div>
+    <div class="sec-head"><h2 id="h-gal">From the bench</h2><span class="label">2 items</span></div>
     <div class="gallery">
-      <figure class="wide">
-        <div class="shot"><img src="images/spectrograms.jpg" loading="lazy" alt="Three spectrograms side by side: noisy input with artillery at minus 4.8 dB, the model's enhanced output, and the clean reference."></div>
-        <figcaption><b>Artillery at −4.8 dB.</b> Noisy input, our output, clean reference. The horizontal speech harmonics come back out of the noise.</figcaption>
-      </figure>
       <figure>
         <div class="shot"><img src="images/signal-chain.jpg" loading="lazy" alt="Illustration of the signal chain: military radio to Raspberry Pi to headset."></div>
         <figcaption><b>The signal chain.</b> Radio in, Raspberry Pi 5 in the middle, headset out.</figcaption>
@@ -315,15 +451,13 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
       <li><span class="k">Result</span><p><b>Ahead of DeepFilterNet v0.5.6</b> on our own 125-clip held-out set, on PESQ, STOI and SI-SNR at once.</p></li>
       <li><span class="k">Hardware</span><p>The two-stage model runs on a <b>Raspberry Pi 5 at 69.7 ms per 100 ms chunk</b>, int8, no GPU.</p></li>
       <li><span class="k">Training</span><p><b>36 logged training runs.</b> Two changes moved quality: a perceptual loss, and an additive second stage that restores what a mask removes.</p></li>
-      <li><span class="k next">Next</span><p>DCCRN, toward the <b>PESQ 3.389</b> ceiling our ideal-mask test measured.</p></li>
+      <li><span class="k next">Next</span><p>Training on <b>several noises at once</b>, such as rotor wash and gunfire together, with a larger hand-labelled noise set.</p></li>
     </ol>
   </section>
 
   <section aria-labelledby="h-soon">
     <div class="sec-head"><h2 id="h-soon">Coming to this page</h2></div>
     <div class="soon">
-      <span>Live test photos</span>
-      <span>Pi 5 recording, raw vs cleaned</span>
       <span>Code repository link</span>
     </div>
   </section>
@@ -446,6 +580,162 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
     track.addEventListener('click', function(e){ seek(track, e); });
     if (pic) pic.addEventListener('click', function(e){ seek(pic, e); });
   });
+})();
+</script>
+<script>
+(function(){
+var ENDS = {
+  train: { start: "Dataset", end: "Trained model", endTo: "run" },
+  run:   { start: "Radio", end: "Headset" }
+};
+var TRACKS = {
+  train: [
+    { n:"Recordings", h:"Two real recordings", b:"A clean speech clip and one noise clip, picked fresh each time from 23 Indian languages and 7 noise categories.",
+      v:'<div class="hw-pair"><figure><img draggable="false" src="images/flow/clean.jpg" alt="Clean speech spectrogram: stacked horizontal lines"><figcaption><b>Clean speech</b>, 3 s</figcaption></figure><span class="hw-plus">+</span><figure><img draggable="false" src="images/flow/noise.jpg" alt="Noise spectrogram: a burst of vertical lines from rifle fire"><figcaption><b>One noise clip</b>, here an assault rifle</figcaption></figure></div>'
+        + '<div class="hw-chips"><span>ambient</span><span>assault rifle</span><span>engine</span><span>heavy artillery</span><span>helicopter</span><span>mortar</span><span>rocket</span></div>' },
+    { n:"Mix", h:"Mixed at a random loudness", b:"1 in 10 mixes: noise louder than the speech (−5 to 0 dB). The rest: 0 to 15 dB. <b>This example: 5 dB.</b>",
+      v:'<div class="hw-snr"><div class="hw-snr-bar" aria-hidden="true"><i class="hw-lo"></i><i class="hw-hi"></i><b class="hw-mark"></b></div><div class="hw-snr-scale"><span>−5 dB</span><span>0</span><span>5</span><span>10</span><span>15 dB</span></div></div>'
+        + '<figure><img draggable="false" src="images/flow/noisy.jpg" alt="Spectrogram of the mixture: speech lines and rifle bursts together"><figcaption><b>The noisy mixture.</b> The two recordings are added as sound waves, 32 ms window, 10 ms steps, 257 pitch bands.</figcaption></figure>' },
+    { n:"CRN", h:"Into the CRN (stage 1)", b:"Full pitch detail below 2 kHz, where speech lives; above that, pitches are grouped into 64 bands the way the ear groups them. 7.3 million settings to learn.",
+      v:'<div class="hw-crn"><div class="hw-blk"><b>Encoder</b><small>5 layers</small></div><span class="hw-to">&rarr;</span><div class="hw-blk"><b>Memory</b><small>2 LSTM layers</small></div><span class="hw-to">&rarr;</span><div class="hw-blk"><b>Decoder</b><small>paints the mask</small></div></div>' },
+    { n:"Mask", h:"The mask", b:"A “keep this much” dial from 0 to 1, for every pitch band at every moment. Bright = keep, dark = remove.",
+      v:'<figure><img draggable="false" src="images/flow/mask.jpg" alt="The mask: bright where speech is kept, dark vertical stripes where the rifle shots are removed"><figcaption>The dark stripes are the gunshots being told to leave.</figcaption></figure>' },
+    { n:"Output", h:"Mask &times; noisy picture", b:"Multiply the mask onto the noisy picture and turn it back into sound. The model never invents anything — it can only turn existing sound down.",
+      v:'<figure><img draggable="false" src="images/flow/enhanced.jpg" alt="Spectrogram of the model output: speech lines remain, most rifle bursts are gone"><figcaption><b>The model’s output.</b> This practice clip goes from 5.0 dB to 14.3 dB SI-SNR.</figcaption></figure>' },
+    { n:"Check", h:"Checked against the clean clip", b:"Two checks: does the <b>sound wave</b> match (SI-SNR), and do the <b>spectrograms</b> match after squashing loud parts, so quiet consonants count too.",
+      v:'<div class="hw-pair"><figure><img draggable="false" src="images/flow/enhanced.jpg" alt=""><figcaption>output</figcaption></figure><span class="hw-plus">vs</span><figure><img draggable="false" src="images/flow/clean.jpg" alt=""><figcaption>the clean speech it started from</figcaption></figure></div>' },
+    { n:"Repeat", h:"Repeat, with a new random mix", b:"The error nudges the CRN’s settings, then the next round starts with a fresh pairing of speech, noise and loudness, so the model cannot just memorise clips. 150 passes over the data. The stage-2 post-filter is then trained the same way, with the CRN frozen.",
+      v:'<div class="hw-loopcard"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 3v4h4"/></svg><p class="hw-body" style="margin:0">Nothing here is fixed data on disk — every training round is a fresh, random pairing.</p></div>' }
+  ],
+  run: [
+    { n:"Live audio", h:"Live audio from the radio", b:"Real audio from our demo recording. Noise fills every pitch, the whole time.",
+      v:'<figure><img draggable="false" src="images/spec-live-noisy.jpg" alt="Spectrogram of the real noisy recording from the demo video"><figcaption>Real recording, not a synthetic mix.</figcaption></figure>' },
+    { n:"Chunks", h:"Cut into 100 ms chunks", b:"The model works on each chunk as soon as it arrives, waiting 76 ms more to peek slightly ahead, then turns it into the same kind of picture as in training.",
+      v:'<div class="hw-chunks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="hw-now"></i><i></i><i></i></div>' },
+    { n:"CRN", h:"The same CRN, frozen", b:"Its settings no longer change. Its memory does: what it heard in the last chunk carries into the next, so a sentence is followed across chunk boundaries.",
+      v:'<div class="hw-crn"><div class="hw-blk"><b>Encoder</b><small>5 layers</small></div><span class="hw-to">&rarr;</span><div class="hw-blk"><b>Memory</b><small>carried chunk to chunk</small></div><span class="hw-to">&rarr;</span><div class="hw-blk"><b>Decoder</b><small>paints the mask</small></div></div><span class="hw-badge">int8 on Raspberry Pi 5</span>' },
+    { n:"Mask", h:"Mask &times; picture, back to sound", b:"Exactly the same multiplication as in training — nothing about the maths changes for deployment, only that nothing behind it is being checked or adjusted any more.",
+      v:'<div class="hw-eq"><div class="hw-blk"><b>Mask</b><small>0 to 1</small></div><span class="hw-op">&times;</span><div class="hw-blk"><b>Noisy picture</b><small>this chunk</small></div><span class="hw-op">=</span><div class="hw-blk hw-teal"><b>Cleaner sound</b><small>back as a wave</small></div></div>' },
+    { n:"Post-filter", h:"Post-filter (stage 2)", b:"A mask can only turn sound down. This small second model, 128 thousand settings, adds back speech detail the noise destroyed. It never peeks ahead, so it adds no extra waiting.",
+      v:'<div class="hw-eq"><div class="hw-blk"><b>Stage 1</b><small>mask output</small></div><span class="hw-op">+</span><div class="hw-blk"><b>Post-filter</b><small>adds detail back</small></div><span class="hw-op">=</span><div class="hw-blk hw-teal"><b>Final sound</b><small>to the headset</small></div></div>' },
+    { n:"You hear", h:"What the listener hears", b:"The voice, with the background gone.",
+      v:'<figure><img draggable="false" src="images/spec-live-enhanced.jpg" alt="Spectrogram of the enhanced recording: speech lines remain, gaps between words are dark"><figcaption>Same recording as the first slide, after both stages.</figcaption></figure>'
+        + '<div class="hw-stat"><b>69.7 ms</b><span>of work per 100 ms of audio on a Raspberry Pi 5, both stages — comfortably inside real time.</span></div>'
+        + '<div class="hw-leftbehind"><span>Left behind after training:</span><s>clean speech</s><s>mixing</s><s>the checks</s></div>' }
+  ]
+};
+
+var track = 'train', i = 0, strip = null;
+var stage = document.getElementById('hw-stage'), rail = document.getElementById('hw-rail'), count = document.getElementById('hw-count');
+var prevBtn = document.getElementById('hw-prev'), nextBtn = document.getElementById('hw-next');
+var tabs = [].slice.call(document.querySelectorAll('.hw-tab'));
+
+function build(){
+  // build this track's slides and flow rail once; navigation only switches classes
+  var steps = TRACKS[track];
+  stage.innerHTML = '<div class="hw-track">' + steps.map(function(s, n){
+    return '<div class="hw-slide" aria-hidden="true"><h3>' + s.h + '</h3><div class="hw-visual">' + s.v + '</div><p class="hw-body">' + s.b + '</p></div>';
+  }).join('') + '</div>';
+  strip = stage.firstChild;
+  var e = ENDS[track];
+  rail.innerHTML = '<span class="hw-node hw-end hw-start"><i></i><span class="hw-t"><small>Start</small>' + e.start + '</span></span>'
+    + steps.map(function(s, n){
+        return '<button type="button" class="hw-node hw-step" data-i="' + n + '" aria-label="Step ' + (n + 1) + ': ' + s.n + '"><i></i><span class="hw-t">' + s.n + '</span></button>';
+      }).join('')
+    + (e.endTo ? '<button type="button" class="hw-node hw-end hw-finish hw-go" aria-label="End: ' + e.end + '. Continue to On the Pi"><i></i><span class="hw-t"><small>End</small>' + e.end + '<span class="hw-arr"> &rarr;</span></span></button>'
+               : '<span class="hw-node hw-end hw-finish"><i></i><span class="hw-t"><small>End</small>' + e.end + '</span></span>');
+  [].slice.call(rail.querySelectorAll('.hw-node.hw-step')).forEach(function(b){ b.addEventListener('click', function(){ i = +b.dataset.i; show(); }); });
+  var go2 = rail.querySelector('.hw-node.hw-go');
+  if (go2) go2.addEventListener('click', function(){ switchTo(e.endTo); });
+  show(false);   // a new track appears in place, without sliding in
+}
+var GAP = 16;     // must match .track's gap
+function place(animate, drag){
+  // position the strip so card i fills the stage, plus any live drag offset
+  strip.style.transition = animate ? '' : 'none';
+  strip.style.transform = 'translate3d(' + (-i * (stage.clientWidth + GAP) + (drag || 0)) + 'px,0,0)';
+}
+function show(animate){
+  var steps = TRACKS[track];
+  place(animate !== false);
+  [].slice.call(strip.children).forEach(function(el, n){
+    el.classList.toggle('hw-active', n === i);
+    el.setAttribute('aria-hidden', n === i ? 'false' : 'true');
+  });
+  var nodes = [].slice.call(rail.querySelectorAll('.hw-node.hw-step'));
+  nodes.forEach(function(b, n){
+    b.classList.toggle('hw-done', n < i);
+    b.classList.toggle('hw-here', n === i);
+    if (n === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+  });
+  rail.querySelector('.hw-start').classList.add('hw-reached');
+  rail.querySelector('.hw-finish').classList.toggle('hw-reached', i === steps.length - 1);
+  count.textContent = (i + 1) + ' / ' + steps.length;
+  prevBtn.disabled = i === 0;
+  nextBtn.disabled = i === steps.length - 1;
+}
+function go(delta){
+  var ni = i + delta;
+  if (ni < 0 || ni >= TRACKS[track].length) return;
+  i = ni; show();
+}
+function switchTo(name){
+  if (name === track) return;
+  tabs.forEach(function(o){ o.setAttribute('aria-selected', o.dataset.track === name ? 'true' : 'false'); });
+  track = name; i = 0; build();
+}
+tabs.forEach(function(t){ t.addEventListener('click', function(){ switchTo(t.dataset.track); }); });
+prevBtn.addEventListener('click', function(){ go(-1); });
+nextBtn.addEventListener('click', function(){ go(1); });
+document.addEventListener('keydown', function(e){
+  // only while the walkthrough is on screen, and never while typing
+  var r = stage.getBoundingClientRect();
+  if (r.bottom < 0 || r.top > innerHeight || e.altKey || e.ctrlKey || e.metaKey) return;
+  if (/input|textarea|select/i.test((e.target && e.target.tagName) || '')) return;
+  if (e.key === 'ArrowRight') go(1);
+  else if (e.key === 'ArrowLeft') go(-1);
+});
+
+// drag or swipe the card: it follows the finger (or mouse), and on release
+// snaps to the next step if dragged past a fifth of the width or flicked fast,
+// otherwise springs back. Vertical movement is left to the page to scroll.
+var drag = null;
+stage.addEventListener('pointerdown', function(e){
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  drag = { x: e.clientX, y: e.clientY, t: performance.now(), dx: 0, on: false, id: e.pointerId };
+});
+stage.addEventListener('pointermove', function(e){
+  if (!drag) return;
+  var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+  if (!drag.on){
+    if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)){
+      drag.on = true; stage.classList.add('hw-dragging');
+      try { stage.setPointerCapture(drag.id); } catch (err) {}
+    } else if (Math.abs(dy) > 8){ drag = null; return; }   // a vertical scroll, not a swipe
+    else return;
+  }
+  var last = TRACKS[track].length - 1;
+  if ((i === 0 && dx > 0) || (i === last && dx < 0)) dx *= 0.3;   // stretch at the ends
+  drag.dx = dx;
+  place(false, dx);
+});
+function release(cancelled){
+  if (!drag) return;
+  if (drag.on){
+    stage.classList.remove('hw-dragging');
+    var w = stage.clientWidth, speed = drag.dx / Math.max(1, performance.now() - drag.t);   // px per ms
+    var last = TRACKS[track].length - 1;
+    if (!cancelled && (drag.dx < -w * 0.2 || speed < -0.5) && i < last) i++;
+    else if (!cancelled && (drag.dx > w * 0.2 || speed > 0.5) && i > 0) i--;
+    show();
+  }
+  drag = null;
+}
+stage.addEventListener('pointerup', function(){ release(false); });
+stage.addEventListener('pointercancel', function(){ release(true); });
+window.addEventListener('resize', function(){ place(false); });
+
+build();
 })();
 </script>
 </body>

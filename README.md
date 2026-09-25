@@ -11,7 +11,6 @@ Plain HTML, CSS and JavaScript. No build step, no dependencies, no bundler.
 public/
   index.html          the whole page (styles and script are inline, as in the original)
   images/
-    spectrograms.jpg  noisy / enhanced / clean comparison
     signal-chain.jpg  radio -> Raspberry Pi 5 -> headset
 ```
 
