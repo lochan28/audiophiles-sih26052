@@ -109,11 +109,6 @@ figcaption b{color:var(--ink);font-weight:600}
 .sound[aria-pressed="true"] .i-on{display:block}
 .sound[aria-pressed="true"] .i-off{display:none}
 
-.yt-progress{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(255,255,255,.28);cursor:pointer}
-.yt-progress i{position:absolute;inset:0 auto 0 0;width:0;background:var(--teal)}
-.yt-progress:hover{height:7px}
-.yt-progress:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
-
 footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 
 @media (max-width:560px){
@@ -147,24 +142,18 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
   </header>
 
   <section aria-labelledby="h-watch">
-    <div class="sec-head"><h2 id="h-watch">Watch it work</h2><span class="label">Muted by default</span></div>
+    <div class="sec-head"><h2 id="h-watch">Watch it work</h2><span class="label">Plays when in view</span></div>
     <!-- YOUTUBE_ID is the video after /shorts/ or /watch?v= in the share link.
          youtube-nocookie.com avoids setting tracking cookies until the viewer presses play. -->
     <div class="player">
       <iframe id="demo"
-        src="https://www.youtube-nocookie.com/embed/WhHAS9xkLww?autoplay=1&mute=1&loop=1&playlist=WhHAS9xkLww&playsinline=1&controls=0&disablekb=1&fs=0&modestbranding=1&rel=0&enablejsapi=1"
+        src="https://www.youtube-nocookie.com/embed/WhHAS9xkLww?mute=1&loop=1&playlist=WhHAS9xkLww&playsinline=1&controls=1&modestbranding=1&rel=0&enablejsapi=1"
         title="Demo: noisy channel in, cleaned speech out" frameborder="0"
-        allow="autoplay; encrypted-media; picture-in-picture" loading="lazy"></iframe>
-      <!-- YouTube's own control bar is off (controls=0) -- it comes as one bundle
-           (title card, prev/next, settings, captions, fullscreen, logo) with no way
-           to keep only a piece of it. This progress bar and the sound button below
-           are ours, driven by the real player through YouTube's IFrame API. -->
-      <div class="yt-progress" id="progress" role="slider" tabindex="0"
-           aria-label="Video progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="progress-fill"></i></div>
-      <button id="sound" class="sound" type="button" aria-pressed="false">
+        allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+      <button id="sound" class="sound" type="button" aria-pressed="true">
         <svg class="i-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm15.5 3l2.5 2.5-1 1L18.5 13 16 15.5l-1-1L17.5 12 15 9.5l1-1L18.5 11 21 8.5l1 1L19.5 12z"/></svg>
         <svg class="i-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 2.2v2.1a7.8 7.8 0 0 1 0 15.4v2.1a9.9 9.9 0 0 0 0-19.6z"/></svg>
-        <span class="sound-text">Tap for sound</span>
+        <span class="sound-text">Sound on</span>
       </button>
     </div>
     <p class="note">Recorded on the prototype: a noisy channel going in, the cleaned speech coming out.</p>
@@ -274,62 +263,90 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
 </script>
 
 <script>
-/* Drives the progress bar and sound button by talking to the embedded player
-   directly over postMessage, rather than the official YT.Player() wrapper --
-   that wrapper's origin handshake expects youtube.com and does not reliably
-   fire its ready/state events against a youtube-nocookie.com iframe (tested:
-   it silently never called back). The raw wire protocol underneath it works
-   fine on nocookie, so this talks to it directly. */
+/* The demo starts by itself the first time it comes on screen, with sound
+   on by default, and then keeps playing -- scrolling away does not pause it;
+   only the viewer's own pause does.
+   Everything goes to the YouTube iframe over its postMessage protocol
+   (enablejsapi=1 in the embed URL turns it on).
+
+   Browsers refuse to start a video WITH sound until the visitor has clicked
+   or tapped somewhere on the page -- scrolling does not count. So: try with
+   sound; if the player does not start, or starts but mutes itself, fall back
+   to muted and flip the button to "Tap for sound". Visitors who have already
+   tapped anything on the page get sound straight away. The button always
+   follows what the player reports, so it never says "Sound on" over a muted
+   video (including when someone uses YouTube's own volume icon). */
 (function(){
-  var frame = document.getElementById('demo');
-  var track = document.getElementById('progress'), fill = document.getElementById('progress-fill');
-  var b = document.getElementById('sound'), text = b.querySelector('.sound-text');
-  if (!frame || !track || !b) return;
-  var on = false, duration = 0;
+  var frame = document.getElementById('demo'), box = frame && frame.parentElement;
+  var b = document.getElementById('sound');
+  if (!frame || !b) return;
+  var text = b.querySelector('.sound-text');
+  var soundOn = true, inView = false, ready = false, state = -1, muted = null, check = 0, lastCmd = 0, started = false;
 
-  function send(func, args){
-    frame.contentWindow.postMessage(JSON.stringify({event:'command', func:func, args: args || []}), '*');
+  function send(func){
+    if (func === 'mute' || func === 'unMute') lastCmd = Date.now();
+    frame.contentWindow.postMessage(JSON.stringify({event:'command', func:func, args:[]}), '*');
   }
-  function startListening(){
-    frame.contentWindow.postMessage(JSON.stringify({event:'listening', id:'demo'}), '*');
-  }
-  frame.addEventListener('load', startListening);
-  setTimeout(startListening, 300);   // load may have already fired before this ran
-  setTimeout(startListening, 1200);  // and the player itself can take a moment to attach
-
-  window.addEventListener('message', function(e){
-    var data;
-    try { data = JSON.parse(e.data); } catch (err) { return; }
-    if (data.event !== 'infoDelivery' || !data.info) return;
-    var info = data.info;
-    if (info.progressState && info.progressState.duration) duration = info.progressState.duration;
-    if (!duration || info.currentTime == null) return;
-    var pct = Math.min(100, (info.currentTime / duration) * 100);
-    fill.style.width = pct + '%';
-    track.setAttribute('aria-valuenow', Math.round(pct));
-  });
-
-  function seekTo(clientX){
-    if (!duration) return;
-    var rect = track.getBoundingClientRect();
-    var frac = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-    send('seekTo', [frac * duration, true]);
-  }
-  track.addEventListener('click', function(ev){ seekTo(ev.clientX); });
-  track.addEventListener('keydown', function(ev){
-    if (!duration) return;
-    var now = (parseFloat(fill.style.width) || 0) / 100 * duration;
-    if (ev.key === 'ArrowRight') send('seekTo', [Math.min(duration, now + 5), true]);
-    else if (ev.key === 'ArrowLeft') send('seekTo', [Math.max(0, now - 5), true]);
-    else return;
-    ev.preventDefault();
-  });
-
-  b.addEventListener('click', function(){
-    on = !on;
-    send(on ? 'unMute' : 'mute');
+  function showSound(on){
+    soundOn = on;
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
     text.textContent = on ? 'Sound on' : 'Tap for sound';
+  }
+  function apply(){
+    if (!ready) return;
+    if (!inView || started) return;   // start once; never pause it ourselves
+    send(soundOn ? 'unMute' : 'mute');
+    send('playVideo');
+    started = true;
+    if (soundOn) verify(0);
+  }
+  // Did the browser let it play with sound? Buffering (3) just means "not yet"
+  // on a slow connection, so keep waiting; stopped or muted means refused.
+  function verify(n){
+    check = setTimeout(function(){
+      if (!soundOn) return;
+      if ((state === 3 || (state === -1 && n < 3)) && n < 15) return verify(n + 1);
+      if (state !== 1 || muted === true){ showSound(false); send('mute'); send('playVideo'); }
+    }, 1000);
+  }
+
+  // Ask the player to report its state; repeat until it answers (the iframe
+  // is lazy-loaded, so it may not exist yet when this runs).
+  var tries = 0, hello = setInterval(function(){
+    if (ready || ++tries > 60) return clearInterval(hello);
+    frame.contentWindow.postMessage(JSON.stringify({event:'listening', id:'demo'}), '*');
+  }, 500);
+
+  window.addEventListener('message', function(e){
+    if (e.source !== frame.contentWindow) return;
+    var d; try { d = JSON.parse(e.data); } catch (err) { return; }
+    if (d.info && typeof d.info.playerState === 'number') state = d.info.playerState;
+    if (d.event === 'onStateChange' && typeof d.info === 'number') state = d.info;
+    if (d.info && typeof d.info.muted === 'boolean'){
+      muted = d.info.muted;
+      // Before we have started it, this is just the embed's initial mute=1.
+      // After, ignore the echo of our own mute/unMute briefly, then trust it.
+      if (started && Date.now() - lastCmd > 1000 && muted === soundOn) showSound(!muted);
+    }
+    if (!ready){ ready = true; apply(); }
+  });
+
+  if ('IntersectionObserver' in window){
+    // Start once about a third of the video is on screen, then stop watching.
+    // (isIntersecting alone is true for even a 1px sliver, so use the ratio.)
+    var SHOW = 0.35;
+    var seen = new IntersectionObserver(function(entries){
+      if (entries[0].intersectionRatio < SHOW) return;
+      inView = true; seen.disconnect(); apply();
+    }, { threshold: [0, SHOW, 1] });
+    seen.observe(box);
+  } else {
+    inView = true;   // very old browser: just play
+  }
+
+  b.addEventListener('click', function(){
+    showSound(!soundOn);
+    send(soundOn ? 'unMute' : 'mute');
   });
 })();
 </script>
