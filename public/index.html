@@ -131,7 +131,7 @@ figcaption b{color:var(--ink);font-weight:600}
 .sample.after .track i{background:var(--teal)}
 .segs{display:grid;grid-template-columns:repeat(3,1fr);column-gap:6px;font:500 .7rem/1 var(--mono);color:var(--muted)}
 .segs span:nth-child(2){text-align:center}.segs span:nth-child(3){text-align:right}
-.time{flex:none;font:500 .8rem/1 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.time{align-self:flex-end;font:500 .74rem/1 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
 
 /* ===== how it works: two swipeable walkthroughs ===== */
 /* tabs choosing which flow */
@@ -143,12 +143,10 @@ figcaption b{color:var(--ink);font-weight:600}
 
 /* the slide deck */
 .hw-deck{position:relative}
-.hw-progress{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.hw-count{font:500 .78rem/1 var(--mono);color:var(--muted)}
 /* flow rail: start marker, every step by name, end marker. The whole flow
    always fits: one row of names on wide screens; on phones the names alternate
    above and below the line so each gets twice the room. */
-.hw-rail{position:relative;display:flex;margin:6px 0 12px;padding:0 4px;height:52px}
+.hw-rail{position:relative;display:flex;margin:6px 0 6px;padding:0 4px;height:52px}
 .hw-node{flex:1 1 0;min-width:0;position:relative;height:100%;background:none;border:0;padding:0;margin:0;cursor:pointer;
   font:500 .7rem/1.15 var(--sans);color:var(--muted)}
 .hw-node::before{content:"";position:absolute;top:7px;left:-50%;right:50%;height:2px;background:var(--rule)}
@@ -166,8 +164,11 @@ figcaption b{color:var(--ink);font-weight:600}
 .hw-node.hw-done i{background:var(--teal);border-color:var(--teal)}
 /* the connecting line fills with teal from left to right as you advance, and
    drains back when you go back */
-.hw-node::before{background:linear-gradient(var(--teal),var(--teal)) left center/0% 100% no-repeat,var(--rule);transition:background-size .4s ease}
-.hw-node.hw-done::before,.hw-node.hw-here::before,.hw-node.hw-end.hw-reached::before{background:linear-gradient(var(--teal),var(--teal)) left center/100% 100% no-repeat,var(--rule)}
+.hw-node::before{background:linear-gradient(var(--teal),var(--teal)) left center/var(--fill,0%) 100% no-repeat,var(--rule);transition:background-size .4s ease}
+/* the line into the next dot is the countdown: the script sets --fill every
+   frame, so it must not also be eased */
+.hw-node.hw-up::before{transition:none}
+.hw-node.hw-done::before,.hw-node.hw-here::before{background:linear-gradient(var(--teal),var(--teal)) left center/100% 100% no-repeat,var(--rule)}
 .hw-node{transition:color .3s ease}
 .hw-node i{transition:background-color .3s ease,border-color .3s ease,transform .3s ease,box-shadow .3s ease}
 .hw-node.hw-here{color:var(--ink);font-weight:600}
@@ -195,28 +196,36 @@ figcaption b{color:var(--ink);font-weight:600}
 
 /* the cards sit side by side on a strip that slides; it is as tall as the
    tallest card, so the Back/Next buttons never jump between steps */
-.hw-stage{overflow:hidden;touch-action:pan-y;cursor:grab;border-radius:14px}
+.hw-stage{position:relative;overflow:hidden;touch-action:pan-y;cursor:grab;border-radius:14px}
 .hw-stage.hw-dragging{cursor:grabbing;user-select:none;-webkit-user-select:none}
-.hw-track{display:flex;gap:16px;align-items:stretch;transition:transform .42s cubic-bezier(.22,.61,.36,1);will-change:transform}
-.hw-stage.hw-dragging .hw-track{transition:none}
+.hw-track{display:flex;gap:16px;align-items:stretch;transition:transform .42s cubic-bezier(.22,.61,.36,1)}
+.hw-stage.hw-dragging .hw-track{transition:none;will-change:transform}
 .hw-slide{flex:0 0 100%;min-width:0;display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:20px}
 .hw-slide img{-webkit-user-drag:none}
 @media (prefers-reduced-motion:reduce){
   .hw-track,.hw-node,.hw-node i,.hw-node::before{transition:none !important}
 }
-.hw-visual{display:flex;flex-direction:column;gap:12px}
+/* the visual takes whatever height the card has spare (cards all match the
+   tallest one): pictures grow into it, diagrams are centred in it */
+.hw-visual{flex:1 1 auto;display:flex;flex-direction:column;justify-content:center;gap:12px;min-height:0}
+.hw-visual > figure{flex:1 1 auto;display:flex;flex-direction:column}
 .hw-visual:empty{display:none}
 .hw-visual figure{margin:0}
-.hw-slide h3{font-size:1.3rem;font-weight:700;font-stretch:85%;letter-spacing:0;text-transform:none}
-.hw-slide .hw-body{font-size:.94rem;color:var(--body)}
-.hw-slide .hw-body b{color:var(--ink)}
+.hw-slide h3{font-size:1.15rem;font-weight:600;font-stretch:85%;letter-spacing:0;text-transform:none}
+.hw-slide .hw-body{font-size:.9rem;line-height:1.6;color:#525E73}   /* lighter than page text; 5.9:1 on the card */
+.hw-slide .hw-body b{color:var(--ink);font-weight:600}
 
-.hw-visual img{display:block;width:100%;height:clamp(130px,20vw,190px);object-fit:fill;border-radius:8px;background:#000}
+.hw-visual img{display:block;width:100%;flex:1 0 auto;height:clamp(130px,20vw,190px);object-fit:fill;border-radius:8px;background:#000}
 .hw-visual figcaption{margin-top:6px;font-size:.78rem;color:var(--muted);line-height:1.35}
-.hw-pair{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:start}
-.hw-pair .hw-plus{align-self:center;font:600 1.2rem/1 var(--mono);color:var(--muted);margin-top:40px}
-.hw-pair figure{margin:0}
-.hw-pair img{height:clamp(90px,14vw,140px)}
+/* two pictures side by side: one row for both pictures, one row for both
+   captions, so the pictures stay the same height whatever the captions do */
+.hw-pair{flex:1 1 auto;display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:1fr auto;column-gap:8px;row-gap:6px}
+.hw-pair figure{display:contents}
+.hw-pair img{grid-row:1;align-self:stretch;height:auto;min-height:clamp(90px,14vw,140px);contain:size}   /* size containment: only min-height counts toward the row; stretch fills any spare */
+.hw-pair figcaption{grid-row:2;margin-top:0}
+.hw-pair figure:first-child img,.hw-pair figure:first-child figcaption{grid-column:1}
+.hw-pair figure:last-child img,.hw-pair figure:last-child figcaption{grid-column:3}
+.hw-pair .hw-plus{grid-row:1;grid-column:2;align-self:center;font:600 1.2rem/1 var(--mono);color:var(--muted)}
 .hw-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
 .hw-chips span{font:500 .66rem/1 var(--mono);background:var(--mat);border:1px solid var(--rule);border-radius:999px;padding:4px 7px;color:var(--body)}
 
@@ -229,9 +238,9 @@ figcaption b{color:var(--ink);font-weight:600}
 .hw-snr-scale{display:flex;justify-content:space-between;font:500 .64rem/1 var(--mono);color:var(--muted)}
 
 .hw-crn{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:5px;align-items:stretch}
-.hw-blk{background:var(--navy);color:#fff;border-radius:8px;padding:8px 5px;text-align:center;display:flex;flex-direction:column;gap:3px;justify-content:center}
-.hw-blk b{font:600 .78rem/1.1 var(--display);font-stretch:85%}
-.hw-blk small{font:400 .62rem/1.2 var(--mono);opacity:.85}
+.hw-blk{background:var(--navy);color:#fff;border-radius:10px;padding:16px 6px;min-height:108px;text-align:center;display:flex;flex-direction:column;gap:3px;justify-content:center}
+.hw-blk b{font:600 1.05rem/1.1 var(--display);font-stretch:85%}
+.hw-blk small{font:400 .7rem/1.3 var(--mono);opacity:.85}
 .hw-crn .hw-to{align-self:center;color:var(--navy);font-weight:700;font-size:.9rem}
 .hw-badge{align-self:flex-start;font:500 .66rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:6px;background:var(--good-bg);color:var(--good)}
 
@@ -239,16 +248,18 @@ figcaption b{color:var(--ink);font-weight:600}
 .hw-eq .hw-op{align-self:center;font:600 1.1rem/1 var(--mono);color:var(--navy)}
 .hw-blk.hw-teal{background:var(--teal)}
 
-.hw-chunks{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
-.hw-chunks i{height:20px;border-radius:3px;background:var(--rule)}
+.hw-chunkbox{display:flex;flex-direction:column;gap:8px}
+.hw-chunks{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.hw-chunks i{height:96px;border-radius:6px;background:var(--rule)}
+.hw-chunkscale{display:flex;justify-content:space-between;font:500 .7rem/1 var(--mono);color:var(--muted)}
 .hw-chunks i.hw-now{background:var(--teal)}
 
-.hw-loopcard{display:flex;gap:10px;align-items:flex-start;padding:4px 2px}
-.hw-loopcard svg{flex:none;width:26px;height:26px;fill:none;stroke:var(--teal);stroke-width:2.2;margin-top:2px}
+.hw-loopcard{display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center;padding:4px 12px}
+.hw-loopcard svg{flex:none;width:56px;height:56px;fill:none;stroke:var(--teal);stroke-width:1.8}
 
-.hw-stat{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:12px 14px;border-radius:10px;background:var(--mat);border:1px solid var(--rule)}
-.hw-stat b{font:500 1.5rem/1 var(--mono);color:var(--ink)}
-.hw-stat span{font-size:.85rem}
+.hw-stat{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding:10px 12px;border-radius:10px;background:var(--mat);border:1px solid var(--rule)}
+.hw-stat b{font:500 1.3rem/1 var(--mono);color:var(--ink)}
+.hw-stat span{font-size:.82rem;line-height:1.45}
 .hw-leftbehind{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:.82rem;color:var(--muted)}
 .hw-leftbehind s{font:500 .68rem/1 var(--mono);border:1px dashed var(--rule);border-radius:999px;padding:5px 8px;color:var(--muted)}
 
@@ -322,8 +333,7 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
           <div class="spec-axis" aria-hidden="true"><span>0 s</span><span>Spectrogram, 0 to 8 kHz</span><span>8 s</span></div>
           <div class="deck">
             <button class="pp" type="button" aria-label="Play the noisy input from the video"><svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12l10-6z"/></svg><svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2h3v12h-3zM9.5 2h3v12h-3z"/></svg></button>
-            <div class="bar"><div class="track plain"><i></i></div></div>
-            <span class="time">0:00 / 0:08</span>
+            <div class="bar"><span class="time">0:00 / 0:08</span><div class="track plain"><i></i></div></div>
           </div>
           <audio preload="metadata" src="audio/live-noisy.mp3"></audio>
         </div>
@@ -337,8 +347,7 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
           <div class="spec-axis" aria-hidden="true"><span>0 s</span><span>Spectrogram, 0 to 8 kHz</span><span>8 s</span></div>
           <div class="deck">
             <button class="pp" type="button" aria-label="Play the enhanced output from the video"><svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12l10-6z"/></svg><svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2h3v12h-3zM9.5 2h3v12h-3z"/></svg></button>
-            <div class="bar"><div class="track plain"><i></i></div></div>
-            <span class="time">0:00 / 0:08</span>
+            <div class="bar"><span class="time">0:00 / 0:08</span><div class="track plain"><i></i></div></div>
           </div>
           <audio preload="metadata" src="audio/live-enhanced.mp3"></audio>
         </div>
@@ -356,10 +365,10 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
         <div class="deck">
           <button class="pp" type="button" aria-label="Play the noisy sample"><svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12l10-6z"/></svg><svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2h3v12h-3zM9.5 2h3v12h-3z"/></svg></button>
           <div class="bar">
+            <span class="time">0:00 / 0:09</span>
             <div class="track"><i></i></div>
             <div class="segs" aria-hidden="true"><span>Helicopter</span><span>Engine</span><span>Rifle</span></div>
           </div>
-          <span class="time">0:00 / 0:09</span>
         </div>
         <audio preload="metadata" src="audio/test-noisy.mp3"></audio>
       </div>
@@ -369,10 +378,10 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
         <div class="deck">
           <button class="pp" type="button" aria-label="Play the enhanced sample"><svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12l10-6z"/></svg><svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2h3v12h-3zM9.5 2h3v12h-3z"/></svg></button>
           <div class="bar">
+            <span class="time">0:00 / 0:09</span>
             <div class="track"><i></i></div>
             <div class="segs" aria-hidden="true"><span>Helicopter</span><span>Engine</span><span>Rifle</span></div>
           </div>
-          <span class="time">0:00 / 0:09</span>
         </div>
         <audio preload="metadata" src="audio/test-enhanced.mp3"></audio>
       </div>
@@ -390,7 +399,6 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
 
     <div class="hw-deck">
       <nav class="hw-rail" id="hw-rail" aria-label="Steps in this walkthrough"></nav>
-      <div class="hw-progress"><span class="hw-count" id="hw-count">1 / 7</span></div>
       <div class="hw-stage" id="hw-stage"></div>
       <div class="hw-nav">
         <button class="hw-navbtn hw-prev" id="hw-prev" type="button"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 2 4 8l6 6 1.4-1.4L6.8 8l4.6-4.6z"/></svg>Back</button>
@@ -611,22 +619,22 @@ var TRACKS = {
     { n:"Live audio", h:"Live audio from the radio", b:"Real audio from our demo recording. Noise fills every pitch, the whole time.",
       v:'<figure><img draggable="false" src="images/spec-live-noisy.jpg" alt="Spectrogram of the real noisy recording from the demo video"><figcaption>Real recording, not a synthetic mix.</figcaption></figure>' },
     { n:"Chunks", h:"Cut into 100 ms chunks", b:"The model works on each chunk as soon as it arrives, waiting 76 ms more to peek slightly ahead, then turns it into the same kind of picture as in training.",
-      v:'<div class="hw-chunks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="hw-now"></i><i></i><i></i></div>' },
+      v:'<div class="hw-chunkbox" aria-hidden="true"><div class="hw-chunks"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="hw-now"></i><i></i><i></i></div><div class="hw-chunkscale"><span>0 s</span><span>one chunk = 100 ms</span><span>1 s</span></div></div>' },
     { n:"CRN", h:"The same CRN, frozen", b:"Its settings no longer change. Its memory does: what it heard in the last chunk carries into the next, so a sentence is followed across chunk boundaries.",
-      v:'<div class="hw-crn"><div class="hw-blk"><b>Encoder</b><small>5 layers</small></div><span class="hw-to">&rarr;</span><div class="hw-blk"><b>Memory</b><small>carried chunk to chunk</small></div><span class="hw-to">&rarr;</span><div class="hw-blk"><b>Decoder</b><small>paints the mask</small></div></div><span class="hw-badge">int8 on Raspberry Pi 5</span>' },
+      v:'<div class="hw-crn"><div class="hw-blk"><b>Encoder</b><small>5 layers</small></div><span class="hw-to">&rarr;</span><div class="hw-blk"><b>Memory</b><small>carried chunk to chunk</small></div><span class="hw-to">&rarr;</span><div class="hw-blk"><b>Decoder</b><small>paints the mask</small></div></div><span class="hw-badge">int8 on Raspberry Pi 5</span>'
+        + '<div class="hw-leftbehind"><span>Left behind after training:</span><s>clean speech</s><s>mixing</s><s>the checks</s></div>' },
     { n:"Mask", h:"Mask &times; picture, back to sound", b:"Exactly the same multiplication as in training — nothing about the maths changes for deployment, only that nothing behind it is being checked or adjusted any more.",
       v:'<div class="hw-eq"><div class="hw-blk"><b>Mask</b><small>0 to 1</small></div><span class="hw-op">&times;</span><div class="hw-blk"><b>Noisy picture</b><small>this chunk</small></div><span class="hw-op">=</span><div class="hw-blk hw-teal"><b>Cleaner sound</b><small>back as a wave</small></div></div>' },
     { n:"Post-filter", h:"Post-filter (stage 2)", b:"A mask can only turn sound down. This small second model, 128 thousand settings, adds back speech detail the noise destroyed. It never peeks ahead, so it adds no extra waiting.",
       v:'<div class="hw-eq"><div class="hw-blk"><b>Stage 1</b><small>mask output</small></div><span class="hw-op">+</span><div class="hw-blk"><b>Post-filter</b><small>adds detail back</small></div><span class="hw-op">=</span><div class="hw-blk hw-teal"><b>Final sound</b><small>to the headset</small></div></div>' },
     { n:"You hear", h:"What the listener hears", b:"The voice, with the background gone.",
       v:'<figure><img draggable="false" src="images/spec-live-enhanced.jpg" alt="Spectrogram of the enhanced recording: speech lines remain, gaps between words are dark"><figcaption>Same recording as the first slide, after both stages.</figcaption></figure>'
-        + '<div class="hw-stat"><b>69.7 ms</b><span>of work per 100 ms of audio on a Raspberry Pi 5, both stages — comfortably inside real time.</span></div>'
-        + '<div class="hw-leftbehind"><span>Left behind after training:</span><s>clean speech</s><s>mixing</s><s>the checks</s></div>' }
+        + '<div class="hw-stat"><b>69.7 ms</b><span>of work per 100 ms of audio on a Raspberry Pi 5, both stages — comfortably inside real time.</span></div>' }
   ]
 };
 
-var track = 'train', i = 0, strip = null;
-var stage = document.getElementById('hw-stage'), rail = document.getElementById('hw-rail'), count = document.getElementById('hw-count');
+var track = 'train', i = 0, strip = null, story = [];
+var stage = document.getElementById('hw-stage'), rail = document.getElementById('hw-rail');
 var prevBtn = document.getElementById('hw-prev'), nextBtn = document.getElementById('hw-next');
 var tabs = [].slice.call(document.querySelectorAll('.hw-tab'));
 
@@ -636,7 +644,7 @@ function build(){
   stage.innerHTML = '<div class="hw-track">' + steps.map(function(s, n){
     return '<div class="hw-slide" aria-hidden="true"><h3>' + s.h + '</h3><div class="hw-visual">' + s.v + '</div><p class="hw-body">' + s.b + '</p></div>';
   }).join('') + '</div>';
-  strip = stage.firstChild;
+  strip = stage.querySelector('.hw-track');
   var e = ENDS[track];
   rail.innerHTML = '<span class="hw-node hw-end hw-start"><i></i><span class="hw-t"><small>Start</small>' + e.start + '</span></span>'
     + steps.map(function(s, n){
@@ -647,16 +655,51 @@ function build(){
   [].slice.call(rail.querySelectorAll('.hw-node.hw-step')).forEach(function(b){ b.addEventListener('click', function(){ i = +b.dataset.i; show(); }); });
   var go2 = rail.querySelector('.hw-node.hw-go');
   if (go2) go2.addEventListener('click', function(){ switchTo(e.endTo); });
+  fitRail();
+  matchCards();
   show(false);   // a new track appears in place, without sliding in
 }
 var GAP = 16;     // must match .track's gap
 function place(animate, drag){
-  // position the strip so card i fills the stage, plus any live drag offset
+  // position the strip so card i fills the stage, plus any live drag offset.
+  // Uses the stage's exact (fractional) width -- clientWidth rounds, and the
+  // error built up card by card -- and lands the card on a whole screen
+  // pixel, because text drawn at a fractional position looks blurred.
   strip.style.transition = animate ? '' : 'none';
-  strip.style.transform = 'translate3d(' + (-i * (stage.clientWidth + GAP) + (drag || 0)) + 'px,0,0)';
+  var r = stage.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  var x = -i * (r.width + GAP) + (drag || 0);
+  var edge = r.left + i * (r.width + GAP) + x;          // where the card's left edge will sit
+  x += Math.round(edge * dpr) / dpr - edge;
+  strip.style.transform = 'translateX(' + x.toFixed(3) + 'px)';
+}
+function matchCards(){
+  // every card, on both tracks, is as tall as the tallest one overall: build
+  // all cards off screen at the stage's width, measure their natural heights,
+  // and give the strip that height (cards stretch to fill it)
+  var probe = document.createElement('div');
+  probe.setAttribute('aria-hidden', 'true');
+  probe.style.cssText = 'position:absolute;left:-10000px;top:0;visibility:hidden;width:' + stage.getBoundingClientRect().width + 'px';
+  probe.innerHTML = ['train', 'run'].map(function(t){
+    return TRACKS[t].map(function(s){
+      return '<div class="hw-slide"><h3>' + s.h + '</h3><div class="hw-visual">' + s.v + '</div><p class="hw-body">' + s.b + '</p></div>';
+    }).join('');
+  }).join('');
+  stage.parentNode.appendChild(probe);
+  var tallest = Math.max.apply(null, [].slice.call(probe.children).map(function(el){ return el.getBoundingClientRect().height; }));
+  probe.remove();
+  strip.style.minHeight = Math.ceil(tallest) + 'px';
+}
+function fitRail(){
+  // trim the rail to its lowest name, so the card sits the same small distance
+  // below it on either track and at any width (names are absolutely placed)
+  rail.style.height = '';
+  var top = rail.getBoundingClientRect().top;
+  var low = Math.max.apply(null, [].slice.call(rail.querySelectorAll('.hw-t')).map(function(t){ return t.getBoundingClientRect().bottom; }));
+  rail.style.height = Math.ceil(low - top + 2) + 'px';
 }
 function show(animate){
   var steps = TRACKS[track];
+  elapsed = 0;
   place(animate !== false);
   [].slice.call(strip.children).forEach(function(el, n){
     el.classList.toggle('hw-active', n === i);
@@ -670,7 +713,6 @@ function show(animate){
   });
   rail.querySelector('.hw-start').classList.add('hw-reached');
   rail.querySelector('.hw-finish').classList.toggle('hw-reached', i === steps.length - 1);
-  count.textContent = (i + 1) + ' / ' + steps.length;
   prevBtn.disabled = i === 0;
   nextBtn.disabled = i === steps.length - 1;
 }
@@ -733,9 +775,54 @@ function release(cancelled){
 }
 stage.addEventListener('pointerup', function(){ release(false); });
 stage.addEventListener('pointercancel', function(){ release(true); });
-window.addEventListener('resize', function(){ place(false); });
+window.addEventListener('resize', function(){ matchCards(); place(false); fitRail(); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ fitRail(); matchCards(); });   // re-measure once the web fonts arrive
+
+// ---- auto-advance ---------------------------------------------------------
+// Each card stays up roughly as long as it takes to read, then slides on; at
+// the end of Training it carries on into On the Pi, and from there loops back.
+// It waits while a finger or mouse is on the card, while the section is off
+// screen and while the browser tab is hidden -- so pressing and holding the
+// card pauses it, as in an Instagram story. Swiping, the buttons, the rail and
+// the tabs all still work, and each restarts the countdown.
+var MIN_MS = 5000, MS_PER_WORD = 280, MAX_MS = 10000;   // dwell per card: 5 to 10 s
+var autoOn = !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+var elapsed = 0, lastT = null, hovering = false, onScreen = false;
+function dwell(){
+  var words = (strip.children[i].textContent.match(/\S+/g) || []).length;
+  return Math.max(MIN_MS, Math.min(MAX_MS, words * MS_PER_WORD));
+}
+function advance(){
+  if (i < TRACKS[track].length - 1) go(1);
+  else switchTo(track === 'train' ? 'run' : 'train');
+}
+function tick(t){
+  var dt = lastT === null ? 0 : Math.min(t - lastT, 250);   // count slow frames fully, but not a long sleep
+  lastT = t;
+  if (autoOn && onScreen && !hovering && !drag && !document.hidden){
+    elapsed += dt;
+    if (elapsed >= dwell()) advance();                       // show() resets elapsed
+  }
+  // countdown on the rail: the line into the next dot (or into End, on the
+  // last card) fills as this card's time runs out
+  var last = TRACKS[track].length - 1;
+  var pct = autoOn ? Math.min(100, elapsed / dwell() * 100) : (i === last ? 100 : 0);
+  [].slice.call(rail.querySelectorAll('.hw-node.hw-step, .hw-node.hw-finish')).forEach(function(el, n){
+    // start at the edge of the current dot (its glow covers ~14px of the line)
+    // and finish at the edge of the next one (~8px), so all of it shows
+    if (n === i + 1){ el.classList.add('hw-up'); el.style.setProperty('--fill', 'calc(14px + (100% - 22px) * ' + (pct / 100).toFixed(4) + ')'); }
+    else if (el.classList.contains('hw-up')){ el.classList.remove('hw-up'); el.style.removeProperty('--fill'); }
+  });
+  requestAnimationFrame(tick);
+}
+stage.addEventListener('pointerenter', function(e){ if (e.pointerType === 'mouse') hovering = true; });
+stage.addEventListener('pointerleave', function(e){ if (e.pointerType === 'mouse') hovering = false; });
+if ('IntersectionObserver' in window){
+  new IntersectionObserver(function(en){ onScreen = en[0].intersectionRatio >= 0.5; }, { threshold: [0, 0.5, 1] }).observe(stage);
+} else onScreen = true;
 
 build();
+requestAnimationFrame(tick);
 })();
 </script>
 </body>
