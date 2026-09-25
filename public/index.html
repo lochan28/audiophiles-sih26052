@@ -109,6 +109,39 @@ figcaption b{color:var(--ink);font-weight:600}
 .sound[aria-pressed="true"] .i-on{display:block}
 .sound[aria-pressed="true"] .i-off{display:none}
 
+/* audio-only version of the video, under the player */
+.listen{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.listen-head{font-size:1rem;font-weight:600;font-stretch:85%;color:var(--ink)}
+.track.plain{background-image:none}
+
+.spec{position:relative;margin-top:4px;border-radius:6px;overflow:hidden;background:#000;line-height:0;cursor:pointer}
+.spec img{display:block;width:100%;height:110px;object-fit:fill}
+.spec .head{position:absolute;top:0;bottom:0;left:0;width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 4px rgba(0,0,0,.6);opacity:0;transition:opacity .15s}
+.sample.playing .spec .head,.sample.started .spec .head{opacity:1}
+.spec-axis{display:flex;justify-content:space-between;font:500 .72rem/1 var(--mono);letter-spacing:.02em;color:var(--muted)}
+
+/* audio samples */
+.samples{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.sample{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.sample.after{border-color:var(--teal)}
+.sample h3{font-size:1.15rem;font-weight:600;font-stretch:85%}
+.deck{display:flex;align-items:center;gap:14px;margin-top:6px}
+.pp{flex:none;width:48px;height:48px;border-radius:50%;border:0;background:var(--navy);display:grid;place-items:center;cursor:pointer}
+.pp:hover{background:var(--teal)}
+.pp:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.pp svg{width:16px;height:16px;fill:#fff}
+.pp .i-play{margin-left:2px}
+.pp .i-pause,.sample.playing .pp .i-play{display:none}
+.sample.playing .pp .i-pause{display:block}
+.bar{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.track{position:relative;height:8px;border-radius:4px;background:var(--track);cursor:pointer;
+  background-image:linear-gradient(90deg,transparent calc(33.3% - 1px),var(--mat) calc(33.3% - 1px),var(--mat) calc(33.3% + 1px),transparent calc(33.3% + 1px),transparent calc(66.6% - 1px),var(--mat) calc(66.6% - 1px),var(--mat) calc(66.6% + 1px),transparent calc(66.6% + 1px))}
+.track i{position:absolute;inset:0 auto 0 0;width:0;border-radius:4px;background:var(--muted)}
+.sample.after .track i{background:var(--teal)}
+.segs{display:grid;grid-template-columns:repeat(3,1fr);column-gap:6px;font:500 .7rem/1 var(--mono);color:var(--muted)}
+.segs span:nth-child(2){text-align:center}.segs span:nth-child(3){text-align:right}
+.time{flex:none;font:500 .8rem/1 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+
 footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
 
 @media (max-width:560px){
@@ -157,6 +190,75 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
       </button>
     </div>
     <p class="note">Recorded on the prototype: a noisy channel going in, the cleaned speech coming out.</p>
+    <div class="listen">
+      <h3 class="listen-head">Rather listen? The same recording, audio only.</h3>
+      <div class="samples">
+        <div class="sample before">
+          <span class="label">From the video</span>
+          <h3>Noisy input</h3>
+          <div class="spec">
+            <img src="images/spec-live-noisy.jpg" alt="Spectrogram of the noisy input: broadband noise covers every frequency for the whole eight seconds, with bright vertical streaks from impulsive bangs." loading="lazy">
+            <b class="head" aria-hidden="true"></b>
+          </div>
+          <div class="spec-axis" aria-hidden="true"><span>0 s</span><span>Spectrogram, 0 to 8 kHz</span><span>8 s</span></div>
+          <div class="deck">
+            <button class="pp" type="button" aria-label="Play the noisy input from the video"><svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12l10-6z"/></svg><svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2h3v12h-3zM9.5 2h3v12h-3z"/></svg></button>
+            <div class="bar"><div class="track plain"><i></i></div></div>
+            <span class="time">0:00 / 0:08</span>
+          </div>
+          <audio preload="metadata" src="audio/live-noisy.mp3"></audio>
+        </div>
+        <div class="sample after">
+          <span class="label">From the video</span>
+          <h3>Enhanced output</h3>
+          <div class="spec">
+            <img src="images/spec-live-enhanced.jpg" alt="Spectrogram of the enhanced output on the same colour scale: the background noise is gone, leaving the stacked horizontal harmonics of the voice and dark gaps where no one is speaking." loading="lazy">
+            <b class="head" aria-hidden="true"></b>
+          </div>
+          <div class="spec-axis" aria-hidden="true"><span>0 s</span><span>Spectrogram, 0 to 8 kHz</span><span>8 s</span></div>
+          <div class="deck">
+            <button class="pp" type="button" aria-label="Play the enhanced output from the video"><svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12l10-6z"/></svg><svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2h3v12h-3zM9.5 2h3v12h-3z"/></svg></button>
+            <div class="bar"><div class="track plain"><i></i></div></div>
+            <span class="time">0:00 / 0:08</span>
+          </div>
+          <audio preload="metadata" src="audio/live-enhanced.mp3"></audio>
+        </div>
+      </div>
+      <p class="note">In each spectrogram, brightness is loudness at each pitch over time, low pitches at the bottom. Both use one shared scale, so darker really means quieter. Noise fills the whole Noisy input picture; after the model, what is left is the voice (the stacked horizontal lines are its harmonics), with the pauses gone dark. The black strip along the top edge of both is the phone's audio compression, not the model.</p>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-hear">
+    <div class="sec-head"><h2 id="h-hear">Hear the difference</h2><span class="label">Held-out test clip</span></div>
+    <div class="samples">
+      <div class="sample before">
+        <span class="label">Before</span>
+        <h3>Noisy radio channel</h3>
+        <div class="deck">
+          <button class="pp" type="button" aria-label="Play the noisy sample"><svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12l10-6z"/></svg><svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2h3v12h-3zM9.5 2h3v12h-3z"/></svg></button>
+          <div class="bar">
+            <div class="track"><i></i></div>
+            <div class="segs" aria-hidden="true"><span>Helicopter</span><span>Engine</span><span>Rifle</span></div>
+          </div>
+          <span class="time">0:00 / 0:09</span>
+        </div>
+        <audio preload="metadata" src="audio/test-noisy.mp3"></audio>
+      </div>
+      <div class="sample after">
+        <span class="label">After</span>
+        <h3>Enhanced by our model</h3>
+        <div class="deck">
+          <button class="pp" type="button" aria-label="Play the enhanced sample"><svg class="i-play" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12l10-6z"/></svg><svg class="i-pause" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 2h3v12h-3zM9.5 2h3v12h-3z"/></svg></button>
+          <div class="bar">
+            <div class="track"><i></i></div>
+            <div class="segs" aria-hidden="true"><span>Helicopter</span><span>Engine</span><span>Rifle</span></div>
+          </div>
+          <span class="time">0:00 / 0:09</span>
+        </div>
+        <audio preload="metadata" src="audio/test-enhanced.mp3"></audio>
+      </div>
+    </div>
+    <p class="note">Three held-out test recordings joined end to end, so the noise switches from a helicopter louder than the speech itself, to an engine, to rifle fire. None of it was used in training. On this clip PESQ rises from 1.19 to 2.06, one of the best of our eight demo clips; across all eight the gain runs from +0.39 to +0.87.</p>
   </section>
 
   <section aria-labelledby="h-num">
@@ -307,5 +409,44 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
 })();
 </script>
 
+<script>
+/* Before/after samples. Playing one stops the other, and pauses the demo
+   video if it is playing, so two soundtracks never overlap. */
+(function(){
+  var cards = [].slice.call(document.querySelectorAll('.sample'));
+  var video = document.getElementById('demo');
+  function mmss(t){ t = Math.max(0, Math.floor(t || 0)); return Math.floor(t/60) + ':' + ('0' + t%60).slice(-2); }
+  cards.forEach(function(card){
+    var a = card.querySelector('audio'), btn = card.querySelector('.pp');
+    var track = card.querySelector('.track'), fill = track.querySelector('i'), time = card.querySelector('.time');
+    var what = btn.getAttribute('aria-label').replace('Play ', '');
+    var pic = card.querySelector('.spec'), head = pic && pic.querySelector('.head');
+    function draw(){
+      var d = a.duration || 9;
+      fill.style.width = (a.currentTime / d * 100) + '%';
+      if (head) head.style.left = (a.currentTime / d * 100) + '%';
+      time.textContent = mmss(a.currentTime) + ' / ' + mmss(Math.round(d));
+    }
+    btn.addEventListener('click', function(){ a.paused ? a.play() : a.pause(); });
+    a.addEventListener('play', function(){
+      cards.forEach(function(c){ if (c !== card) c.querySelector('audio').pause(); });
+      if (video) video.contentWindow.postMessage(JSON.stringify({event:'command', func:'pauseVideo', args:[]}), '*');
+      card.classList.add('playing', 'started'); btn.setAttribute('aria-label', 'Pause ' + what);
+    });
+    a.addEventListener('pause', function(){ card.classList.remove('playing'); btn.setAttribute('aria-label', 'Play ' + what); });
+    a.addEventListener('ended', function(){ a.currentTime = 0; draw(); });
+    a.addEventListener('timeupdate', draw);
+    a.addEventListener('loadedmetadata', draw);
+    function seek(el, e){
+      var r = el.getBoundingClientRect();
+      a.currentTime = Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) * (a.duration || 9);
+      card.classList.add('started');
+      draw();
+    }
+    track.addEventListener('click', function(e){ seek(track, e); });
+    if (pic) pic.addEventListener('click', function(e){ seek(pic, e); });
+  });
+})();
+</script>
 </body>
 </html>
