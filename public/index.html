@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Real-time AI noise cancellation for defence radio. Smart India Hackathon 2026, problem statement SIH26052, team Audiophiles.">
+<title>The Audiophiles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@85,600;85,700;100,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#FFFFFF; --surface:#EEF3F9; --ink:#1F3864; --navy:#1F3864; --body:#3C4657;
+  --muted:#7A8798; --rule:#D6E0EC; --teal:#2A8FA6; --signal:#C2410C;
+  --good:#1E7A45; --good-bg:#E4F2EA; --warn:#9A6414; --warn-bg:#FBF0DC;
+  --track:#D6E0EC; --mat:#FFFFFF; --banner:#E8EEF6;
+  --wave-noise:#C3D0E0; --wave-clean:#2A8FA6;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--body);font:400 16px/1.6 var(--sans);padding-inline:20px;padding-block:28px 56px}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+h1,h2,h3{font-family:var(--display);color:var(--ink);margin:0;text-wrap:balance}
+h2{font-size:1.05rem;font-weight:700;font-stretch:85%;letter-spacing:.08em;text-transform:uppercase;color:var(--navy)}
+p{margin:0}
+a{color:inherit}
+a:focus-visible,.video:focus-visible{outline:3px solid var(--teal);outline-offset:3px;border-radius:10px}
+.mono{font-family:var(--mono)}
+.label{font:500 .72rem/1.2 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+
+.banner{background:var(--banner);border-radius:10px;padding:12px 16px;font-size:.9rem;color:var(--body);display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.banner b{color:var(--ink);font-weight:600}
+
+/* header */
+header{display:flex;flex-direction:column;gap:14px}
+.eyebrow{display:flex;flex-wrap:wrap;gap:6px 18px}
+h1{font-size:clamp(2.4rem,7vw,4rem);font-weight:700;font-stretch:85%;line-height:.98;letter-spacing:-.01em}
+.lede{font-size:1.15rem;color:var(--body);max-width:40em}
+.status{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-size:.9rem;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:7px;font:500 .75rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:6px 10px;border-radius:999px}
+.chip.live{background:var(--good-bg);color:var(--good)}
+.chip.live::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.wave{width:100%;height:84px;display:block;margin-top:6px}
+.wave-key{display:flex;justify-content:space-between;margin-top:-4px}
+
+section{display:flex;flex-direction:column;gap:16px}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding-bottom:10px}
+
+/* videos */
+.videos{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.video{display:flex;gap:16px;align-items:center;text-decoration:none;background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:18px;transition:border-color .15s,transform .15s}
+.video:hover{border-color:var(--teal);transform:translateY(-1px)}
+.play{flex:none;width:52px;height:52px;border-radius:50%;background:var(--navy);display:grid;place-items:center}
+.play svg{width:18px;height:18px;margin-left:3px;fill:var(--surface)}
+.video h3{font-size:1.15rem;font-weight:600;font-stretch:85%}
+.video p{font-size:.88rem;color:var(--muted)}
+
+/* numbers */
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.fig{background:var(--surface);border:1px solid var(--rule);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.fig .val{font:500 2rem/1 var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.fig .val small{font-size:.9rem;color:var(--muted);margin-left:4px}
+.meter{position:relative;height:8px;border-radius:4px;background:var(--track)}
+.meter i{position:absolute;inset:0 auto 0 0;border-radius:4px;background:var(--teal)}
+.meter b{position:absolute;top:-4px;width:2px;height:16px;background:var(--ink)}
+.fig .row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.tag{font:500 .7rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border-radius:6px}
+.tag.met{background:var(--good-bg);color:var(--good)}
+.tag.short{background:var(--warn-bg);color:var(--warn)}
+.note{font-size:.9rem;color:var(--muted)}
+
+/* gallery */
+.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+figure{margin:0;display:flex;flex-direction:column;gap:8px}
+figure.wide{grid-column:1/-1}
+.shot{background:var(--mat);border:1px solid var(--rule);border-radius:12px;padding:12px;overflow:hidden}
+.shot img{display:block;width:100%;height:auto;border-radius:4px}
+figcaption{font-size:.88rem;color:var(--muted)}
+figcaption b{color:var(--ink);font-weight:600}
+.slot{border:2px dashed var(--rule);border-radius:12px;min-height:180px;display:grid;place-items:center;text-align:center;padding:20px;color:var(--muted)}
+.slot .label{margin-bottom:6px;display:block}
+
+/* log */
+.log{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.log li{display:grid;grid-template-columns:120px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid var(--rule)}
+.log li:last-child{border-bottom:0}
+.log .k{font:500 .75rem/1.9 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.log .k.next{color:var(--signal)}
+.log p{color:var(--body)}
+.log p b{color:var(--ink);font-weight:600}
+
+.soon{display:flex;flex-wrap:wrap;gap:10px}
+.soon span{font-size:.9rem;border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:6px 14px;color:var(--body)}
+
+/* video */
+.player{position:relative;background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden;line-height:0}
+.player video{display:block;width:100%;height:auto;background:#0D1B2A}
+.sound{position:absolute;left:14px;bottom:14px;display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;
+  background:rgba(31,56,100,.92);color:#fff;border-radius:999px;padding:9px 15px 9px 12px;
+  font:500 .75rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.sound:hover{background:var(--navy)}
+.sound:focus-visible{outline:3px solid var(--teal);outline-offset:3px}
+.sound svg{width:17px;height:17px;fill:currentColor;flex:none}
+.sound .i-on{display:none}
+.sound[aria-pressed="true"] .i-on{display:block}
+.sound[aria-pressed="true"] .i-off{display:none}
+
+footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:var(--muted);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+
+@media (max-width:560px){
+  .gallery{grid-template-columns:1fr}
+  .log li{grid-template-columns:1fr;gap:4px}
+}
+@media (prefers-reduced-motion:reduce){ .video{transition:none} .video:hover{transform:none} }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <div class="banner" role="note">
+    <b>Prototype in progress.</b> The numbers and images below are from our own bench runs and change as the system improves. Last updated 24 Sep 2026.
+  </div>
+
+  <header>
+    <div class="eyebrow">
+      <span class="label">Smart India Hackathon 2026</span>
+      <span class="label">PS SIH26052</span>
+    </div>
+    <h1>Adaptive Noise Cancellation</h1>
+    <p class="lede">Real-time AI noise cancellation for defence radio. Gunfire, engines and rotor wash are stripped from the channel on a Raspberry Pi 5, so an order is heard the first time.</p>
+    <div class="status">
+      <span class="chip live">Prototype running</span>
+      <span>Last updated 24 Sep 2026</span>
+    </div>
+    <canvas class="wave" id="wave" aria-hidden="true"></canvas>
+    <div class="wave-key"><span class="label">Noisy channel in</span><span class="label">Clean speech out</span></div>
+  </header>
+
+  <section aria-labelledby="h-watch">
+    <div class="sec-head"><h2 id="h-watch">Watch it work</h2><span class="label">Muted by default</span></div>
+    <!-- Drop the real recording in at public/demo.mp4 (same folder as this page). Nothing else needs changing. -->
+    <div class="player">
+      <video id="demo" src="demo.mp4" poster="images/spectrograms.jpg"
+             autoplay muted loop playsinline preload="metadata"></video>
+      <button id="sound" class="sound" type="button" aria-pressed="false">
+        <svg class="i-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm15.5 3l2.5 2.5-1 1L18.5 13 16 15.5l-1-1L17.5 12 15 9.5l1-1L18.5 11 21 8.5l1 1L19.5 12z"/></svg>
+        <svg class="i-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 2.2v2.1a7.8 7.8 0 0 1 0 15.4v2.1a9.9 9.9 0 0 0 0-19.6z"/></svg>
+        <span class="sound-text">Tap for sound</span>
+      </button>
+    </div>
+    <p class="note">Recorded on the prototype: a noisy channel going in, the cleaned speech coming out.</p>
+  </section>
+
+  <section aria-labelledby="h-num">
+    <div class="sec-head"><h2 id="h-num">Where the numbers stand</h2><span class="label">125 held-out mixtures</span></div>
+    <div class="figs">
+      <div class="fig">
+        <span class="label">STOI · intelligibility</span>
+        <span class="val">0.866</span>
+        <div class="meter"><i style="width:86.6%"></i><b style="left:85%"></b></div>
+        <div class="row"><span>target 0.85</span><span class="tag met">Met</span></div>
+      </div>
+      <div class="fig">
+        <span class="label">PESQ · quality</span>
+        <span class="val">1.990</span>
+        <div class="meter"><i style="width:44.2%"></i><b style="left:55.6%"></b></div>
+        <div class="row"><span>target 2.5 of 4.5</span><span class="tag short">Closing</span></div>
+      </div>
+      <div class="fig">
+        <span class="label">SI-SNR · separation</span>
+        <span class="val">13.95<small>dB</small></span>
+        <div class="meter"><i style="width:69.8%"></i><b style="left:75%"></b></div>
+        <div class="row"><span>target 15 dB</span><span class="tag short">Closing</span></div>
+      </div>
+      <div class="fig">
+        <span class="label">Pi 5 · per chunk</span>
+        <span class="val">69.7<small>ms</small></span>
+        <div class="meter"><i style="width:69.7%"></i><b style="left:calc(100% - 2px)"></b></div>
+        <div class="row"><span>budget 100 ms</span><span class="tag met">Inside</span></div>
+      </div>
+    </div>
+    <p class="note">Prototype figures, not final ones. The ceiling above them is already measured at PESQ 3.389. Ahead of DeepFilterNet v0.5.6 on the same held-out set, on all three metrics.</p>
+  </section>
+
+  <section aria-labelledby="h-gal">
+    <div class="sec-head"><h2 id="h-gal">From the bench</h2><span class="label">3 items</span></div>
+    <div class="gallery">
+      <figure class="wide">
+        <div class="shot"><img src="images/spectrograms.jpg" loading="lazy" alt="Three spectrograms side by side: noisy input with artillery at minus 4.8 dB, the model's enhanced output, and the clean reference."></div>
+        <figcaption><b>Artillery at −4.8 dB.</b> Noisy input, our output, clean reference. The horizontal speech harmonics come back out of the noise.</figcaption>
+      </figure>
+      <figure>
+        <div class="shot"><img src="images/signal-chain.jpg" loading="lazy" alt="Illustration of the signal chain: military radio to Raspberry Pi to headset."></div>
+        <figcaption><b>The signal chain.</b> Radio in, Raspberry Pi 5 in the middle, headset out.</figcaption>
+      </figure>
+      <figure>
+        <div class="slot"><div><span class="label">Coming next</span>Photo of the Pi 5 and headset during a live test</div></div>
+      </figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-log">
+    <div class="sec-head"><h2 id="h-log">Progress notes</h2><span class="label">Newest first</span></div>
+    <ol class="log">
+      <li><span class="k">Result</span><p><b>Ahead of DeepFilterNet v0.5.6</b> on our own 125-clip held-out set, on PESQ, STOI and SI-SNR at once.</p></li>
+      <li><span class="k">Hardware</span><p>The two-stage model runs on a <b>Raspberry Pi 5 at 69.7 ms per 100 ms chunk</b>, int8, no GPU.</p></li>
+      <li><span class="k">Training</span><p><b>36 logged training runs.</b> Two changes moved quality: a perceptual loss, and an additive second stage that restores what a mask removes.</p></li>
+      <li><span class="k next">Next</span><p>DCCRN, toward the <b>PESQ 3.389</b> ceiling our ideal-mask test measured.</p></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="h-soon">
+    <div class="sec-head"><h2 id="h-soon">Coming to this page</h2></div>
+    <div class="soon">
+      <span>Live test photos</span>
+      <span>Pi 5 recording, raw vs cleaned</span>
+      <span>Code repository link</span>
+    </div>
+  </section>
+
+  <footer>
+    <span>Adaptive Noise Cancellation · SIH 2026</span>
+    <span class="mono">PS SIH26052</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var c = document.getElementById('wave');
+  if (!c) return;
+  function draw(){
+    var dpr = window.devicePixelRatio || 1, w = c.clientWidth, h = c.clientHeight;
+    if (!w) return;
+    c.width = Math.round(w * dpr); c.height = Math.round(h * dpr);
+    var x = c.getContext('2d'); x.setTransform(dpr,0,0,dpr,0,0); x.clearRect(0,0,w,h);
+    var cs = getComputedStyle(document.documentElement);
+    var noise = cs.getPropertyValue('--wave-noise').trim(), clean = cs.getPropertyValue('--wave-clean').trim();
+    var mid = h/2, seed = 7;
+    function rnd(){ seed = (seed*9301+49297)%233280; return seed/233280 - .5; }
+    var step = 3;
+    for (var px = 0; px < w; px += step){
+      var t = px / w;
+      var speech = Math.abs(Math.sin(px*0.021)) * Math.abs(Math.sin(px*0.0043+1.2)) * 0.8;
+      var burst = (Math.sin(px*0.05) > 0.93) ? 0.9 : 0;
+      var n = (Math.abs(rnd())*0.9 + burst) * (1 - t);
+      var amp = Math.min(1, speech * (0.35 + 0.65*t) + n) * (mid - 4);
+      var sp = speech * (mid - 4);
+      x.fillStyle = noise; x.fillRect(px, mid - amp, step - 1, amp*2);
+      if (t > .45){ x.globalAlpha = Math.min(1,(t-.45)/.2); x.fillStyle = clean; x.fillRect(px, mid - sp, step - 1, sp*2); x.globalAlpha = 1; }
+    }
+  }
+  draw();
+  window.addEventListener('resize', draw);
+})();
+</script>
+
+<script>
+/* Click anywhere on the video, or the button, to unmute. Browsers only allow
+   autoplay while muted, so the page starts silent and the viewer opts in. */
+(function(){
+  var v = document.getElementById('demo'), b = document.getElementById('sound');
+  if (!v || !b) return;
+  var text = b.querySelector('.sound-text');
+  function apply(on){
+    v.muted = !on;
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    text.textContent = on ? 'Sound on' : 'Tap for sound';
+  }
+  function toggle(){ apply(v.muted); if (v.paused) v.play().catch(function(){}); }
+  b.addEventListener('click', toggle);
+  v.addEventListener('click', toggle);
+  apply(false);
+})();
+</script>
+
+</body>
+</html>
