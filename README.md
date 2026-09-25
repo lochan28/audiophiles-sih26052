@@ -10,11 +10,13 @@ Plain HTML, CSS and JavaScript. No build step, no dependencies, no bundler.
 ```
 public/
   index.html          the whole page (styles and script are inline, as in the original)
-  demo.mp4            the demo recording  <-- drop the real file here
   images/
     spectrograms.jpg  noisy / enhanced / clean comparison
     signal-chain.jpg  radio -> Raspberry Pi 5 -> headset
 ```
+
+The demo video is not a file in this repo — it is embedded from YouTube (see
+below), so there is nothing to drop in or keep updated on disk.
 
 Everything lives under `public/` because that is the folder Vercel serves as the
 site root when no framework is detected — so the deploy needs no configuration.
@@ -30,18 +32,28 @@ over HTTP instead:
 python -m http.server 8080 --directory public
 ```
 
-## Dropping in the demo video
+## Changing the demo video
 
-Put the MP4 at `public/demo.mp4`. Nothing else needs editing — the page already
-points at it. Until that file exists the player shows its poster image instead.
+The player is a YouTube embed, not a file in this repo. To point it at a
+different clip:
 
-The video autoplays muted and loops, which is the only way browsers allow
-autoplay. The "Tap for sound" button over the bottom-left corner unmutes it;
-clicking the video itself does the same.
+1. Upload the video to YouTube (Public or Unlisted — Private videos will not
+   play for visitors) and copy its ID: the part of the URL after `/shorts/`
+   or after `?v=`.
+2. In `public/index.html`, find the `<iframe id="demo" ...>` in the
+   "Watch it work" section and replace **both** occurrences of the video ID
+   (`WhHAS9xkLww`) — one in the `src` URL, one in the `playlist` parameter
+   right after it. The `playlist` copy is what makes YouTube loop a single
+   video instead of stopping after one play.
 
-H.264 video with AAC audio in an MP4 container plays everywhere. Keep it under
-roughly 25 MB — GitHub warns above 50 MB, and a large file makes the page slow
-on a phone.
+The embed autoplays muted, which is the only way browsers allow autoplay.
+The "Tap for sound" button over the bottom-left corner unmutes it via the
+YouTube player's own API (turned on by `enablejsapi=1` in the embed URL) —
+there is no local video file for it to control.
+
+A landscape recording will show YouTube's own letterboxing inside the
+portrait frame; if the replacement clip is landscape, change `aspect-ratio:9/16`
+under `.player` in the `<style>` block to `16/9`.
 
 ## Replacing the images
 

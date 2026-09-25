@@ -95,8 +95,10 @@ figcaption b{color:var(--ink);font-weight:600}
 .soon span{font-size:.9rem;border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:6px 14px;color:var(--body)}
 
 /* video */
-.player{position:relative;background:var(--surface);border:1px solid var(--rule);border-radius:12px;overflow:hidden;line-height:0}
-.player video{display:block;width:100%;height:auto;background:#0D1B2A}
+/* The clip is a YouTube Short (9:16), so the frame is capped to a phone-ish
+   width rather than running full-bleed on a desktop-wide page. */
+.player{position:relative;width:100%;max-width:380px;margin:0 auto;aspect-ratio:9/16;background:#0D1B2A;border:1px solid var(--rule);border-radius:12px;overflow:hidden}
+.player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .sound{position:absolute;left:14px;bottom:14px;display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;
   background:rgba(31,56,100,.92);color:#fff;border-radius:999px;padding:9px 15px 9px 12px;
   font:500 .75rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase}
@@ -141,10 +143,13 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
 
   <section aria-labelledby="h-watch">
     <div class="sec-head"><h2 id="h-watch">Watch it work</h2><span class="label">Muted by default</span></div>
-    <!-- Drop the real recording in at public/demo.mp4 (same folder as this page). Nothing else needs changing. -->
+    <!-- YOUTUBE_ID is the video after /shorts/ or /watch?v= in the share link.
+         youtube-nocookie.com avoids setting tracking cookies until the viewer presses play. -->
     <div class="player">
-      <video id="demo" src="demo.mp4" poster="images/spectrograms.jpg"
-             autoplay muted loop playsinline preload="metadata"></video>
+      <iframe id="demo"
+        src="https://www.youtube-nocookie.com/embed/WhHAS9xkLww?autoplay=1&mute=1&loop=1&playlist=WhHAS9xkLww&playsinline=1&controls=1&modestbranding=1&rel=0&enablejsapi=1"
+        title="Demo: noisy channel in, cleaned speech out" frameborder="0"
+        allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen loading="lazy"></iframe>
       <button id="sound" class="sound" type="button" aria-pressed="false">
         <svg class="i-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm15.5 3l2.5 2.5-1 1L18.5 13 16 15.5l-1-1L17.5 12 15 9.5l1-1L18.5 11 21 8.5l1 1L19.5 12z"/></svg>
         <svg class="i-on" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 2.2v2.1a7.8 7.8 0 0 1 0 15.4v2.1a9.9 9.9 0 0 0 0-19.6z"/></svg>
@@ -258,21 +263,24 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
 </script>
 
 <script>
-/* Click anywhere on the video, or the button, to unmute. Browsers only allow
-   autoplay while muted, so the page starts silent and the viewer opts in. */
+/* YouTube only allows autoplay while muted, so the embed starts silent and
+   this button unmutes it. There is no local <video> element to control here,
+   so the request goes to the iframe itself via the postMessage command the
+   YouTube player listens for (enablejsapi=1 in the embed URL turns this on). */
 (function(){
-  var v = document.getElementById('demo'), b = document.getElementById('sound');
-  if (!v || !b) return;
+  var frame = document.getElementById('demo'), b = document.getElementById('sound');
+  if (!frame || !b) return;
   var text = b.querySelector('.sound-text');
-  function apply(on){
-    v.muted = !on;
+  var on = false;
+  function send(func){
+    frame.contentWindow.postMessage(JSON.stringify({event:'command', func:func, args:[]}), '*');
+  }
+  b.addEventListener('click', function(){
+    on = !on;
+    send(on ? 'unMute' : 'mute');
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
     text.textContent = on ? 'Sound on' : 'Tap for sound';
-  }
-  function toggle(){ apply(v.muted); if (v.paused) v.play().catch(function(){}); }
-  b.addEventListener('click', toggle);
-  v.addEventListener('click', toggle);
-  apply(false);
+  });
 })();
 </script>
 
