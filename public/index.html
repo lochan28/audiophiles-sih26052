@@ -84,6 +84,12 @@ figcaption b{color:var(--ink);font-weight:600}
 
 .soon{display:flex;flex-wrap:wrap;gap:10px}
 .soon span{font-size:.9rem;border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:6px 14px;color:var(--body)}
+.repo{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;max-width:100%;font:500 .9rem/1.3 var(--mono);color:var(--ink);text-decoration:none;border:1px solid var(--rule);background:var(--surface);border-radius:999px;padding:9px 16px;overflow-wrap:anywhere}
+.repo:hover{border-color:var(--teal);color:var(--teal)}
+.repo:focus-visible,.status a:focus-visible{outline:2px solid var(--teal);outline-offset:3px}
+.status a{color:var(--ink);text-underline-offset:3px}
+.status a:hover{color:var(--teal)}
+@media (max-width:600px){ .repo{font-size:.78rem;padding:8px 13px} }
 
 /* video */
 /* The clip is a YouTube Short (9:16), so the frame is capped to a phone-ish
@@ -299,6 +305,7 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
     <div class="status">
       <span class="chip live">Prototype running</span>
       <span>Last updated 25 Sep 2026</span>
+      <a href="https://github.com/lochan28/Audiophiles_Repo" target="_blank" rel="noopener">Source code on GitHub ↗</a>
     </div>
     <canvas class="wave" id="wave" aria-hidden="true"></canvas>
     <div class="wave-key"><span class="label">Noisy channel in</span><span class="label">Clean speech out</span></div>
@@ -463,11 +470,10 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
     </ol>
   </section>
 
-  <section aria-labelledby="h-soon">
-    <div class="sec-head"><h2 id="h-soon">Coming to this page</h2></div>
-    <div class="soon">
-      <span>Code repository link</span>
-    </div>
+  <section aria-labelledby="h-code">
+    <div class="sec-head"><h2 id="h-code">Source code</h2></div>
+    <p class="note">The model, training and evaluation code, every training run's record, and the Raspberry Pi deployment kit. Audio datasets are not included.</p>
+    <a class="repo" href="https://github.com/lochan28/Audiophiles_Repo" target="_blank" rel="noopener">github.com/lochan28/Audiophiles_Repo ↗</a>
   </section>
 
   <footer>

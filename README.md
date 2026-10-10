@@ -5,6 +5,11 @@ a real-time AI noise-cancellation system for defence radios.
 
 Plain HTML, CSS and JavaScript. No build step, no dependencies, no bundler.
 
+**Looking for the code?** The model, training records and deployment kit live
+in their own repository:
+[lochan28/Audiophiles_Repo](https://github.com/lochan28/Audiophiles_Repo).
+This repository is only the website.
+
 ## Layout
 
 ```
