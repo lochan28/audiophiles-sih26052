@@ -65,6 +65,8 @@ section{display:flex;flex-direction:column;gap:16px}
 
 /* gallery */
 .gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.gallery .wide{grid-column:1/-1}
+.gallery .tall{grid-column:1/-1;justify-self:center;width:100%;max-width:460px}
 figure{margin:0;display:flex;flex-direction:column;gap:8px}
 .shot{background:var(--mat);border:1px solid var(--rule);border-radius:12px;padding:12px;overflow:hidden}
 .shot img{display:block;width:100%;height:auto;border-radius:4px}
@@ -450,12 +452,13 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
   <section aria-labelledby="h-gal">
     <div class="sec-head"><h2 id="h-gal">From the bench</h2><span class="label">2 items</span></div>
     <div class="gallery">
-      <figure>
+      <figure class="wide">
         <div class="shot"><img src="images/signal-chain.jpg" loading="lazy" alt="Illustration of the signal chain: military radio to Raspberry Pi to headset."></div>
         <figcaption><b>The signal chain.</b> Radio in, Raspberry Pi 5 in the middle, headset out.</figcaption>
       </figure>
-      <figure>
-        <div class="slot"><div><span class="label">Coming next</span>Photo of the Pi 5 and headset during a live test</div></div>
+      <figure class="tall">
+        <div class="shot"><img src="images/pi-live-test.jpg" loading="lazy" width="850" height="1380" alt="Two Raspberry Pi boards in a clear box on the bench, cabled up, with a monitor behind them printing the model's per-chunk timing during a live run."></div>
+        <figcaption><b>Live test on the bench.</b> The Raspberry Pi boards in their box, with the model's per-chunk timing printing on the screen behind.</figcaption>
       </figure>
     </div>
   </section>
