@@ -289,6 +289,321 @@ footer{border-top:1px solid var(--rule);padding-top:18px;font-size:.85rem;color:
 }
 </style>
 
+<!-- ===================================================================
+     GLASS THEME (sandbox experiment). Everything that makes the page
+     glassmorphic lives in this one block, layered over the original styles:
+     delete the block and the page is back to the live design.
+     =================================================================== -->
+<style id="glass-theme">
+:root{
+  /* glass recipe -- tune here */
+  --glass:rgba(255,255,255,.55);          /* panel tint: higher = more solid, more readable */
+  --glass-strong:rgba(255,255,255,.72);   /* inner chips, image mats */
+  --glass-edge:rgba(255,255,255,.75);     /* the bright rim that sells the glass */
+  --glass-blur:16px;                      /* frost: more blur = more frosted, slower on phones */
+  --glass-shadow:0 10px 34px rgba(31,56,100,.13), inset 0 1px 0 rgba(255,255,255,.7);
+  --radius:20px;
+
+  /* the original palette, softened to sit on glass */
+  --surface:var(--glass); --mat:var(--glass-strong);
+  --rule:rgba(31,56,100,.13); --track:rgba(31,56,100,.12);
+  --banner:var(--glass);
+  --muted:#5F6E84;   /* darker than the live #7A8798: grey loses contrast on glass */
+}
+
+/* ---- the backdrop: soft colour glows the glass can frost over ---- */
+html,body{background:transparent}
+body::before{
+  content:"";position:fixed;inset:-10vmax;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(38vmax 38vmax at 12% 10%, rgba(42,143,166,.42), transparent 70%),
+    radial-gradient(34vmax 34vmax at 92% 14%, rgba(242,140,40,.26), transparent 70%),
+    radial-gradient(44vmax 44vmax at 78% 82%, rgba(31,56,100,.32), transparent 70%),
+    radial-gradient(36vmax 36vmax at 10% 78%, rgba(110,160,235,.30), transparent 70%),
+    linear-gradient(160deg,#E7F0F8 0%,#F3F1F6 55%,#EAF1F4 100%);
+  animation:glass-drift 28s ease-in-out infinite alternate;
+}
+@keyframes glass-drift{to{transform:translate3d(-2.5vmax,1.5vmax,0) scale(1.06)}}
+@media (prefers-reduced-motion:reduce){ body::before{animation:none} }
+
+/* ---- every panel gets the same glass treatment ---- */
+header,.banner,.fig,.sample,.shot,.hw-slide,.log,.repo,.hw-stat,footer{
+  background:var(--glass);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  backdrop-filter:blur(var(--glass-blur)) saturate(160%);
+  border:1px solid var(--glass-edge);
+  box-shadow:var(--glass-shadow);
+}
+.fig,.sample,.shot,.hw-slide,.log{border-radius:var(--radius)}
+
+/* the header becomes a hero panel */
+header{border-radius:calc(var(--radius) + 6px);padding:28px 26px 22px}
+.wave-key{gap:12px}
+@media (max-width:600px){
+  /* phones: the panel padding would squeeze the two waveform labels together */
+  header{padding:22px 16px 16px;border-radius:var(--radius)}
+  .wave-key .label{letter-spacing:.06em}
+}
+.banner{border-radius:14px}
+
+/* lists and footers need padding once they are panels */
+.log{padding:6px 20px}
+.log li{border-bottom-color:var(--rule)}
+footer{border-radius:var(--radius);padding:16px 20px}
+
+/* the "after" audio card keeps its teal identity as a coloured rim */
+.sample.after{border-color:rgba(42,143,166,.55);box-shadow:var(--glass-shadow),0 0 0 3px rgba(42,143,166,.10)}
+
+/* small chips sit on the glass as slightly more solid glass */
+.hw-chips span,.soon span{background:var(--glass-strong);border-color:var(--glass-edge)}
+.repo{border-radius:999px}
+.repo:hover{background:rgba(255,255,255,.85)}
+
+/* buttons: tinted navy glass rather than flat navy */
+.pp,.hw-navbtn,.sound{
+  background:rgba(31,56,100,.82);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  box-shadow:0 6px 18px rgba(31,56,100,.25), inset 0 1px 0 rgba(255,255,255,.25);
+}
+.pp:hover,.hw-navbtn:hover,.sound:hover{background:rgba(42,143,166,.9)}
+.hw-navbtn:disabled{background:rgba(31,56,100,.82)}
+
+/* the video frame and spectrograms get the same soft rim */
+.player{border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow);border-radius:var(--radius)}
+.hw-stage{border-radius:var(--radius)}
+.hw-node i{background:rgba(255,255,255,.9)}
+
+/* browsers without backdrop-filter: fall back to near-solid panels */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  :root{--glass:rgba(255,255,255,.88);--glass-strong:rgba(255,255,255,.95)}
+}
+</style>
+
+<!-- ===================================================================
+     GLASS + TACTILE (sandbox C). Sandbox B's elements -- cassette, ticket,
+     stamp, receipt printer, keys, numbered tiles, foil, scramble -- rebuilt
+     in glass on top of the glass theme above. Element ideas inspired by
+     dqnamo's component style; all code original. Delete this block and the
+     tactile script at the end of <body> to return to plain glass.
+     =================================================================== -->
+<style id="glass-tactile">
+/* ---- numbered sections and pill tags, in glass ---- */
+.wrap{counter-reset:sec}
+.sec-head{counter-increment:sec;align-items:center}
+.sec-head h2{display:flex;align-items:center;gap:10px}
+.sec-head h2::before{content:counter(sec,decimal-leading-zero);flex:none;font:600 .68rem/1 var(--mono);letter-spacing:.02em;color:#fff;
+  padding:6px 7px;border-radius:7px;background:rgba(31,56,100,.78);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 4px 10px rgba(31,56,100,.22)}
+.eyebrow .label,.sec-head .label{display:inline-block;padding:6px 11px;border-radius:999px;color:#475569;
+  background:var(--glass-strong);border:1px solid var(--glass-edge);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+
+/* ---- keys: navy glass with a firm base that presses down ---- */
+.pp,.hw-navbtn,.sound{
+  background:linear-gradient(180deg,rgba(58,86,140,.88),rgba(31,56,100,.9));
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.38),inset 0 -2px 0 rgba(0,0,0,.18),0 3px 0 rgba(18,32,62,.55),0 8px 16px rgba(31,56,100,.28);
+  transform:translateY(0);transition:transform .08s ease,box-shadow .08s ease,filter .15s ease}
+.pp:hover,.hw-navbtn:hover,.sound:hover{background:linear-gradient(180deg,rgba(58,86,140,.88),rgba(31,56,100,.9));filter:brightness(1.15)}
+.pp:active,.hw-navbtn:active,.sound:active{transform:translateY(3px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 0 rgba(18,32,62,.55),0 2px 6px rgba(31,56,100,.25)}
+.hw-navbtn:disabled{filter:none;opacity:.35;transform:none}
+
+/* ---- clear-shell cassettes ---- */
+.hear .sample{position:relative;padding:14px 14px 16px;border-radius:22px;
+  background:
+    radial-gradient(circle at 13px 13px,rgba(31,56,100,.32) 0 2.5px,transparent 3px),
+    radial-gradient(circle at calc(100% - 13px) 13px,rgba(31,56,100,.32) 0 2.5px,transparent 3px),
+    radial-gradient(circle at 13px calc(100% - 13px),rgba(31,56,100,.32) 0 2.5px,transparent 3px),
+    radial-gradient(circle at calc(100% - 13px) calc(100% - 13px),rgba(31,56,100,.32) 0 2.5px,transparent 3px),
+    linear-gradient(160deg,rgba(255,255,255,.46),rgba(255,255,255,.16));
+  -webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%);
+  border:1px solid rgba(255,255,255,.85);box-shadow:var(--glass-shadow)}
+.hear .sample.after{border-color:rgba(42,143,166,.6);box-shadow:var(--glass-shadow),0 0 0 3px rgba(42,143,166,.12)}
+.cas-label{display:flex;flex-direction:column;gap:6px;padding:10px 12px 12px;border-radius:13px;color:var(--ink);
+  background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.9);box-shadow:inset 0 1px 0 #fff}
+.cas-top{display:flex;justify-content:space-between;align-items:center}
+.cas-side{font:600 .6rem/1 var(--mono);letter-spacing:.08em;color:#fff;background:rgba(31,56,100,.8);border-radius:5px;padding:4px 6px}
+.cas-stripes{height:9px;border-radius:3px;background:linear-gradient(180deg,var(--s1) 0 50%,var(--s2) 50% 100%)}
+.hear .before .cas-stripes{--s1:rgba(232,98,44,.78);--s2:rgba(242,165,65,.78)}
+.hear .after .cas-stripes{--s1:rgba(42,143,166,.82);--s2:rgba(59,111,214,.78)}
+.cas-window{position:relative;height:56px;margin-top:2px;border-radius:28px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;
+  background:rgba(21,30,52,.36);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  box-shadow:inset 0 2px 8px rgba(15,23,42,.35),inset 0 0 0 1px rgba(255,255,255,.28)}
+.cas-tape{position:absolute;left:40px;right:40px;top:50%;height:18px;margin-top:-9px;border-radius:3px;background:linear-gradient(180deg,rgba(90,58,40,.7),rgba(48,30,20,.75))}
+.reel{position:relative;z-index:1;width:42px;height:42px;border-radius:50%;
+  background:radial-gradient(circle,rgba(21,30,52,.62) 0 6px,transparent 6.5px),repeating-conic-gradient(rgba(255,255,255,.95) 0 20deg,rgba(255,255,255,.5) 20deg 60deg);
+  box-shadow:0 0 0 3px rgba(255,255,255,.4),0 2px 6px rgba(15,23,42,.3);
+  animation:reel-spin 2.2s linear infinite;animation-play-state:paused}
+.hear .sample.playing .reel{animation-play-state:running}
+@keyframes reel-spin{to{transform:rotate(360deg)}}
+.hear .deck{margin-top:12px}
+.hear .before .track i{background:#E8622C}
+.hear .after .track i{background:var(--teal)}
+
+/* ---- frosted tickets with real cut-out notches ---- */
+.figs{counter-reset:tkt}
+.fig{--tear:82px;counter-increment:tkt;position:relative;
+  background:linear-gradient(90deg,rgba(31,56,100,.30) 55%,transparent 0) 0 calc(var(--tear) - 1px)/9px 2px repeat-x,var(--glass);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.85),inset 0 0 0 1px rgba(255,255,255,.5);
+  -webkit-mask:radial-gradient(circle 9px at 0 var(--tear),#0000 97%,#000),radial-gradient(circle 9px at 100% var(--tear),#0000 97%,#000);
+  -webkit-mask-composite:source-in;
+  mask:radial-gradient(circle 9px at 0 var(--tear),#0000 97%,#000),radial-gradient(circle 9px at 100% var(--tear),#0000 97%,#000);
+  mask-composite:intersect}
+.fig::after{content:"No. " counter(tkt,decimal-leading-zero);position:absolute;top:calc(var(--tear) - 20px);right:16px;font:500 .62rem/1 var(--mono);letter-spacing:.08em;color:#7A8698}
+.fig .val{font-variant-numeric:tabular-nums}
+.fig .meter{margin-top:10px}
+
+/* ---- glass stamp: a frosted frame with real perforation holes ---- */
+.stamp-wrap{display:flex;justify-content:center}
+.stamp-wrap > .shot{width:100%}   /* size from the slot, not from the photo loading */
+.gallery .tall .shot.stamp{--r:6px;--sx:16px;--sy:16px;position:relative;padding:16px 16px 40px;border:0;border-radius:0;
+  background:rgba(255,255,255,.5);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.65);
+  -webkit-mask:linear-gradient(#000 0 0) center/calc(100% - 2 * var(--r)) calc(100% - 2 * var(--r)) no-repeat,
+    radial-gradient(circle var(--r) at 50% 50%,#0000 97%,#000) calc(var(--sx) / -2) calc(var(--sy) / -2)/var(--sx) var(--sy);
+  mask:linear-gradient(#000 0 0) center/calc(100% - 2 * var(--r)) calc(100% - 2 * var(--r)) no-repeat,
+    radial-gradient(circle var(--r) at 50% 50%,#0000 97%,#000) calc(var(--sx) / -2) calc(var(--sy) / -2)/var(--sx) var(--sy)}
+.stamp img{border-radius:3px}
+.stamp-den{position:absolute;top:24px;right:26px;font:700 1.9rem/1 var(--display);font-stretch:85%;color:#fff;text-shadow:0 1px 6px rgba(0,0,0,.55)}
+.stamp-line{position:absolute;left:0;right:0;bottom:15px;text-align:center;font:500 .66rem/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:#475569}
+
+/* ---- receipt printer: smoked-glass slot, frosted receipt ---- */
+.printer{width:100%;max-width:600px;margin:0 auto}
+.printer-slot{position:relative;z-index:2;height:24px;border-radius:12px;
+  background:linear-gradient(180deg,rgba(44,58,90,.88),rgba(21,30,52,.92));-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),0 6px 14px rgba(31,56,100,.3)}
+.printer-slot::after{content:"";position:absolute;left:22px;right:22px;top:50%;height:4px;margin-top:-2px;border-radius:2px;background:rgba(5,8,16,.92)}
+.receipt-clip{overflow:hidden;margin:-12px 26px 0;padding:0 8px 14px}
+.receipt{padding:26px 22px 34px;font-family:var(--mono);color:#2A2F3C;transition:transform 1.8s cubic-bezier(.25,.8,.3,1);
+  background:rgba(255,255,255,.62);-webkit-backdrop-filter:blur(16px) saturate(160%);backdrop-filter:blur(16px) saturate(160%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.6);
+  -webkit-mask:linear-gradient(#000 0 0) top/100% calc(100% - 9px) no-repeat,conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/18px 9px repeat-x;
+  mask:linear-gradient(#000 0 0) top/100% calc(100% - 9px) no-repeat,conic-gradient(from -45deg at bottom,#0000,#000 1deg 89deg,#0000 90deg) bottom/18px 9px repeat-x}
+.receipt.unprinted{transform:translateY(-102%)}
+.r-head{text-align:center;display:flex;flex-direction:column;gap:4px;padding-bottom:14px;border-bottom:1.5px dashed rgba(31,56,100,.28);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:#5A6170}
+.r-head b{font-size:.86rem;color:var(--ink);letter-spacing:.14em}
+.receipt .log{background:none;border:0;box-shadow:none;border-radius:0;padding:4px 0;-webkit-backdrop-filter:none;backdrop-filter:none}
+.receipt .log li{grid-template-columns:96px 1fr;padding:12px 0;border-bottom:1.5px dashed rgba(31,56,100,.16);font-size:.84rem;line-height:1.5}
+.receipt .log li:last-child{border-bottom:1.5px dashed rgba(31,56,100,.28)}
+.receipt .log p{color:#3A4050;font-family:var(--sans)}
+.r-foot{display:flex;flex-direction:column;gap:6px;padding-top:14px;font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;color:#3A4050}
+.r-row{display:flex;gap:8px;align-items:baseline}
+.r-row span:nth-child(2){flex:1;border-bottom:1.5px dotted rgba(31,56,100,.3);transform:translateY(-3px)}
+.r-row b{color:var(--ink)}
+.r-thanks{text-align:center;margin-top:10px;font-weight:600;letter-spacing:.18em;color:var(--ink)}
+.r-bars{height:42px;margin:12px auto 4px;width:78%;opacity:.85;
+  background:repeating-linear-gradient(90deg,#1F3864 0 2px,transparent 2px 4px,#1F3864 4px 5px,transparent 5px 8px,#1F3864 8px 11px,transparent 11px 12px,#1F3864 12px 13px,transparent 13px 17px,#1F3864 17px 19px,transparent 19px 20px)}
+.r-code{text-align:center;font-size:.7rem;letter-spacing:.3em;color:#5A6170}
+@media (max-width:600px){
+  .receipt-clip{margin-left:14px;margin-right:14px}
+  .receipt{padding:22px 16px 30px}
+  .receipt .log li{grid-template-columns:1fr;gap:3px}
+}
+
+/* ---- foil: the glass code link catches the light ---- */
+.repo{position:relative;isolation:isolate;overflow:hidden}
+.repo::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.8;
+  background:linear-gradient(115deg,transparent 18%,rgba(255,150,210,.55) 32%,rgba(255,226,140,.55) 42%,rgba(150,230,190,.55) 52%,rgba(140,190,255,.6) 62%,transparent 78%);
+  background-size:260% 100%;background-position:var(--fx,40%) 50%;transition:background-position .25s ease}
+
+@media (prefers-reduced-motion:reduce){ .reel{animation:none} .receipt,.pp,.hw-navbtn,.sound{transition:none} }
+</style>
+
+<!-- ===================================================================
+     GLASS BLOCKS (sandbox C). Replaces the frosted look with clear, thick
+     glass: little blur, bevelled bright edges, an inner rim glow, and a light
+     streak that sweeps across each block as it scrolls (driven by the
+     glass-blocks script). Delete this block and that script to return to
+     frosted glass.
+     =================================================================== -->
+<style id="glass-blocks">
+:root{
+  /* clear glass -- tune here */
+  --glass:rgba(255,255,255,.24);          /* tint: lower = clearer glass, harder to read on */
+  --glass-strong:rgba(255,255,255,.44);
+  --glass-blur:2.5px;                     /* a whisper of blur, so text never sits on raw colour */
+  /* the thickness: rim highlights, inner glow, and a cool tint deep in the glass */
+  --block-in:inset 0 1px 0 rgba(255,255,255,.95),inset 1px 0 0 rgba(255,255,255,.55),inset -1px 0 0 rgba(255,255,255,.3),
+             inset 0 -1px 0 rgba(255,255,255,.35),inset 0 0 0 1px rgba(255,255,255,.18),
+             inset 0 0 26px rgba(255,255,255,.32),inset 0 -16px 26px rgba(110,175,200,.12);
+  /* hovering: a bright slab edge, a tight shadow, a far soft shadow, and a
+     faint cyan caustic where light through the glass lands on the page */
+  --block-out:0 2px 0 rgba(214,234,242,.6),
+              0 14px 22px -8px rgba(31,56,100,.20),
+              0 36px 64px -14px rgba(31,56,100,.24),
+              0 44px 80px -22px rgba(70,170,205,.22);
+  --plate-drop:drop-shadow(0 2px 0 rgba(214,234,242,.6)) drop-shadow(0 12px 14px rgba(31,56,100,.16)) drop-shadow(0 30px 30px rgba(31,56,100,.14));
+}
+header,.banner,.fig,.sample,.shot,.hw-slide,.log,.hw-stat,footer{
+  border:1px solid rgba(255,255,255,.62);
+  box-shadow:var(--block-in),var(--block-out);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(140%) brightness(1.05);
+  backdrop-filter:blur(var(--glass-blur)) saturate(140%) brightness(1.05)}
+
+/* the pieces from sandbox B, made clear as well */
+.hear .sample{
+  background:
+    radial-gradient(circle at 13px 13px,rgba(31,56,100,.32) 0 2.5px,transparent 3px),
+    radial-gradient(circle at calc(100% - 13px) 13px,rgba(31,56,100,.32) 0 2.5px,transparent 3px),
+    radial-gradient(circle at 13px calc(100% - 13px),rgba(31,56,100,.32) 0 2.5px,transparent 3px),
+    radial-gradient(circle at calc(100% - 13px) calc(100% - 13px),rgba(31,56,100,.32) 0 2.5px,transparent 3px),
+    linear-gradient(160deg,rgba(255,255,255,.30),rgba(255,255,255,.06));
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(150%) brightness(1.05);
+  backdrop-filter:blur(var(--glass-blur)) saturate(150%) brightness(1.05)}
+.hear .sample.after{box-shadow:var(--block-in),var(--block-out),0 0 0 3px rgba(42,143,166,.14)}
+.cas-window{background:rgba(21,30,52,.30);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.gallery .tall .shot.stamp{background:rgba(255,255,255,.32);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(140%);backdrop-filter:blur(var(--glass-blur)) saturate(140%)}
+.receipt{background:rgba(255,255,255,.44);   /* the densest text on the page keeps a firmer tint */
+  -webkit-backdrop-filter:blur(3px) saturate(140%);backdrop-filter:blur(3px) saturate(140%)}
+
+/* ---- cut-out pieces can't carry a box shadow (their mask clips it), so
+        the shadow comes from the parent and follows the notches, the
+        perforations and the torn edge ---- */
+.figs,.stamp-wrap,.receipt-clip{filter:var(--plate-drop)}
+.receipt-clip{margin:-12px 10px 0;padding:0 24px 46px}   /* room for the shadow below the torn edge */
+@media (max-width:600px){ .receipt-clip{margin-left:0;margin-right:0;padding-left:14px;padding-right:14px} }
+
+/* ---- hovering: plates drift a little faster than the page and tilt a
+        hair as they scroll, so they read as a separate layer ---- */
+/* a 2D, whole-pixel move only: a 3D tilt or a fractional offset renders the text soft */
+.gb:not(.receipt){transform:translateY(var(--lift,0px))}
+
+/* ---- the moving reflection ---- */
+.gb{position:relative;overflow:hidden}
+/* content sits above the reflection, so a passing streak never washes out text */
+.gb > :not(.glint){position:relative;z-index:1}
+.gb > .stamp-den,.gb > .stamp-line{position:absolute;z-index:1}
+.glint{position:absolute;inset:0;z-index:0;pointer-events:none;border-radius:inherit;mix-blend-mode:screen;
+  background:
+    /* a soft glare along the top edge, like light on the upper face */
+    linear-gradient(180deg,rgba(255,255,255,calc(var(--ga,.4) * .5)) 0,rgba(255,255,255,0) 20%),
+    /* gloss: a clear-coat sheen that stops at a soft horizon */
+    linear-gradient(180deg,rgba(255,255,255,.20) 0,rgba(255,255,255,.07) 46%,rgba(255,255,255,0) 52%),
+    /* the main streak, sweeping across as the plate scrolls */
+    linear-gradient(115deg,transparent 0 41%,rgba(255,255,255,var(--ga,.4)) 47%,rgba(255,255,255,calc(var(--ga,.4) * .3)) 50%,transparent 55% 100%),
+    /* and a thin second one, the reflection off the far face */
+    linear-gradient(115deg,transparent 0 59%,rgba(255,255,255,calc(var(--ga,.4) * .45)) 62%,transparent 64.5% 100%);
+  background-repeat:no-repeat;
+  background-size:100% 100%,100% 100%,320% 320%,320% 320%;
+  background-position:0 0,0 0,var(--sheen,35%) var(--sheen,35%),var(--sheen,35%) var(--sheen,35%)}
+/* a glossy surface has a sharper, brighter rim */
+header,.fig,.sample,.shot,.hw-slide,footer{border-color:rgba(255,255,255,.78)}
+/* the header tags are solid, so the streak doesn't show through them */
+header .eyebrow .label{background:#F3F6F9;border-color:rgba(255,255,255,.9);
+  -webkit-backdrop-filter:none;backdrop-filter:none}
+/* ---- crisp small text ---- */
+/* section numbers: solid navy, a size the digits can render cleanly at */
+.sec-head h2::before{font-size:.78rem;font-weight:700;letter-spacing:.04em;padding:6px 8px;
+  background:#1F3864;-webkit-backdrop-filter:none;backdrop-filter:none}
+/* ticket serial, stamp caption, cassette side: a touch larger and darker */
+.fig::after{font-size:.7rem;color:#5A6577}
+.stamp-line{font-size:.7rem;color:#3C4657}
+.cas-side{font-size:.68rem;background:#1F3864}
+</style>
+
 <!-- Vercel Web Analytics: page views and visitors, no cookies, no IPs stored.
      /_vercel/insights/ only exists once Analytics is enabled for the project. -->
 <script>window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };</script>
@@ -837,6 +1152,186 @@ if ('IntersectionObserver' in window){
 
 build();
 requestAnimationFrame(tick);
+})();
+</script>
+<!-- TACTILE script (from sandbox B, reused in sandbox C): adds decoration around existing
+     elements only. The page's own audio and walkthrough code is untouched. -->
+<script id="tactile-js">
+(function(){
+var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* --- cassettes: wrap each Before/After card's title in a tape label --- */
+var hear = document.querySelector('section[aria-labelledby="h-hear"]');
+if (hear){
+  hear.classList.add('hear');
+  [].slice.call(hear.querySelectorAll('.sample')).forEach(function(card, n){
+    var label = card.querySelector('.label'), title = card.querySelector('h3');
+    var wrap = document.createElement('div'); wrap.className = 'cas-label';
+    var top = document.createElement('div'); top.className = 'cas-top';
+    var side = document.createElement('span'); side.className = 'cas-side';
+    side.textContent = n === 0 ? 'SIDE A' : 'SIDE B';
+    side.setAttribute('aria-hidden', 'true');
+    card.insertBefore(wrap, card.firstChild);
+    top.appendChild(label); top.appendChild(side);
+    wrap.appendChild(top); wrap.appendChild(title);
+    var stripes = document.createElement('div'); stripes.className = 'cas-stripes'; stripes.setAttribute('aria-hidden', 'true');
+    var win = document.createElement('div'); win.className = 'cas-window'; win.setAttribute('aria-hidden', 'true');
+    win.innerHTML = '<i class="reel"></i><span class="cas-tape"></span><i class="reel"></i>';
+    wrap.appendChild(stripes); wrap.appendChild(win);
+  });
+}
+
+/* --- tickets: put the perforation exactly under each big number --- */
+function placeTears(){
+  [].slice.call(document.querySelectorAll('.figs .fig')).forEach(function(f){
+    var v = f.querySelector('.val');
+    if (v) f.style.setProperty('--tear', (v.offsetTop + v.offsetHeight + 9) + 'px');
+  });
+}
+placeTears(); window.addEventListener('resize', placeTears);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeTears);
+
+/* --- scramble: each result decodes the first time it scrolls into view --- */
+/* symbols, not digits: a half-decoded result must never read as a real number */
+var GLYPHS = '#%&@$*+=?';
+function scramble(el){
+  var node = el.firstChild;                       /* the number, not its <small> unit */
+  if (!node || node.nodeType !== 3) return;
+  var target = node.nodeValue, t0 = null, dur = 900;
+  function frame(ts){
+    if (t0 === null) t0 = ts;
+    var p = Math.min(1, (ts - t0) / dur), settled = Math.floor(p * target.length), out = '';
+    for (var i = 0; i < target.length; i++){
+      var c = target[i];
+      out += (i < settled || !/[0-9]/.test(c)) ? c : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+    }
+    node.nodeValue = out;
+    if (p < 1) requestAnimationFrame(frame); else node.nodeValue = target;
+  }
+  requestAnimationFrame(frame);
+}
+
+/* --- stamp: frame the bench photo --- */
+var shot = document.querySelector('.gallery .tall .shot');
+if (shot){
+  var sw = document.createElement('div'); sw.className = 'stamp-wrap';
+  shot.parentNode.insertBefore(sw, shot); sw.appendChild(shot);
+  shot.classList.add('stamp');
+  var den = document.createElement('span'); den.className = 'stamp-den'; den.textContent = '26'; den.setAttribute('aria-hidden', 'true');
+  var line = document.createElement('span'); line.className = 'stamp-line'; line.textContent = 'PS SIH26052 \u00b7 Bench test'; line.setAttribute('aria-hidden', 'true');
+  shot.appendChild(den); shot.appendChild(line);
+}
+/* glass stamp: real holes, so space them to land exactly on the corners */
+function sizeStamp(){
+  if (!shot) return;
+  var r = shot.getBoundingClientRect();
+  var nx = Math.max(4, Math.round(r.width / 16)), ny = Math.max(4, Math.round(r.height / 16));
+  shot.style.setProperty('--sx', (r.width / nx) + 'px');
+  shot.style.setProperty('--sy', (r.height / ny) + 'px');
+}
+if (shot){
+  var simg = shot.querySelector('img');
+  if (simg && !simg.complete) simg.addEventListener('load', sizeStamp);
+  sizeStamp(); window.addEventListener('resize', sizeStamp);
+  if ('ResizeObserver' in window) new ResizeObserver(sizeStamp).observe(shot);   /* re-space whenever the frame changes size */
+}
+
+/* --- receipt printer: the progress notes print the first time they show --- */
+var log = document.querySelector('section[aria-labelledby="h-log"] .log');
+if (log){
+  var printer = document.createElement('div'); printer.className = 'printer';
+  printer.innerHTML = '<div class="printer-slot" aria-hidden="true"></div><div class="receipt-clip"><div class="receipt"></div></div>';
+  log.parentNode.insertBefore(printer, log);
+  var receipt = printer.querySelector('.receipt');
+  var head = document.createElement('div'); head.className = 'r-head'; head.setAttribute('aria-hidden', 'true');
+  head.innerHTML = '<b>Audiophiles \u00b7 bench log</b><span>SIH 2026 \u00b7 PS SIH26052</span><span>13 Oct 2026</span>';
+  var foot = document.createElement('div'); foot.className = 'r-foot'; foot.setAttribute('aria-hidden', 'true');
+  foot.innerHTML =
+    '<div class="r-row"><span>Logged training runs</span><span></span><b>36</b></div>' +
+    '<div class="r-row"><span>Held-out test clips</span><span></span><b>125</b></div>' +
+    '<div class="r-row"><span>Pi 5 per 100 ms</span><span></span><b>69.7 ms</b></div>' +
+    '<div class="r-thanks">Thank you for listening</div>' +
+    '<div class="r-bars"></div><div class="r-code">*SIH26052*</div>';
+  receipt.appendChild(head); receipt.appendChild(log); receipt.appendChild(foot);
+  if (!reduce && 'IntersectionObserver' in window){
+    receipt.classList.add('unprinted');
+    var pio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if (e.isIntersecting){ pio.disconnect(); receipt.classList.remove('unprinted'); } });
+    }, {threshold: 0.15});
+    pio.observe(printer);
+  }
+}
+
+/* --- foil: the sheen follows the pointer, and drifts as the page scrolls --- */
+var repo = document.querySelector('.repo');
+if (repo && !reduce){
+  repo.addEventListener('pointermove', function(e){
+    var r = repo.getBoundingClientRect();
+    repo.style.setProperty('--fx', (100 - (e.clientX - r.left) / r.width * 100).toFixed(1) + '%');
+  });
+  window.addEventListener('scroll', function(){
+    var r = repo.getBoundingClientRect();
+    var t = Math.min(1, Math.max(0, r.top / innerHeight));
+    repo.style.setProperty('--fx', (15 + t * 70).toFixed(1) + '%');
+  }, {passive: true});
+}
+
+var vals = [].slice.call(document.querySelectorAll('.figs .val'));
+if (!reduce && 'IntersectionObserver' in window){
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting){ io.unobserve(e.target); scramble(e.target); } });
+  }, {threshold: 0.6});
+  vals.forEach(function(v){ io.observe(v); });
+}
+})();
+</script>
+
+<!-- GLASS BLOCKS script (sandbox C): gives each panel a reflection layer and
+     moves the light across it as the panel scrolls past. -->
+<script id="glass-blocks-js">
+(function(){
+var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* every glass panel except the video frame, where a streak would sit on the film */
+var blocks = [].slice.call(document.querySelectorAll(
+  'header, .figs .fig, .sample, .hw-slide, .gallery .shot, .receipt, footer'));
+blocks.forEach(function(b){
+  b.classList.add('gb');
+  var g = document.createElement('span');
+  g.className = 'glint'; g.setAttribute('aria-hidden', 'true');
+  b.appendChild(g);
+});
+if (reduce){ return; }                         /* static reflection, no movement */
+
+var visible = new Set(), queued = false;
+function update(){
+  queued = false;
+  var vh = window.innerHeight;
+  visible.forEach(function(b){
+    var r = b.getBoundingClientRect();
+    /* t: where the block's middle is on screen, 0 = top edge, 1 = bottom edge */
+    var t = (r.top + r.height / 2) / vh;
+    t = Math.max(-0.3, Math.min(1.3, t));
+    /* the streak slides across as the block rises */
+    b.style.setProperty('--sheen', ((1 - t) * 100).toFixed(1) + '%');
+    /* and brightens as it passes a light source a third of the way down */
+    var near = Math.max(0, 1 - Math.abs(t - 0.32) / 0.62);
+    b.style.setProperty('--ga', (0.18 + 0.5 * near).toFixed(3));
+    /* lift: plates rise slightly faster than the page, in whole pixels so text stays sharp */
+    b.style.setProperty('--lift', Math.round((0.5 - t) * 12) + 'px');
+  });
+}
+function queue(){ if (!queued){ queued = true; requestAnimationFrame(update); } }
+if ('IntersectionObserver' in window){
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){ if (e.isIntersecting) visible.add(e.target); else visible.delete(e.target); });
+    queue();
+  }, {rootMargin: '10% 0px'});
+  blocks.forEach(function(b){ io.observe(b); });
+} else { blocks.forEach(function(b){ visible.add(b); }); }
+window.addEventListener('scroll', queue, {passive: true});
+window.addEventListener('resize', queue);
+queue();
 })();
 </script>
 </body>
